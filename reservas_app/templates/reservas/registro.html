@@ -1,0 +1,47 @@
+{% extends 'reservas/base.html' %}
+
+{% block titulo %}Crear cuenta{% endblock %}
+
+{% block contenido %}
+<div class="col-md-6 mx-auto card p-4">
+    <h1 class="h4 mb-3">Crear cuenta</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label" for="id_username">Usuario</label>
+            <input type="text" name="username" id="id_username" class="form-control"
+                   value="{{ form.username.value|default:'' }}" required>
+            {% for error in form.username.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="id_email">Email</label>
+            <input type="email" name="email" id="id_email" class="form-control"
+                   value="{{ form.email.value|default:'' }}" required>
+            {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="id_telefono">Teléfono (opcional)</label>
+            <input type="text" name="telefono" id="id_telefono" class="form-control"
+                   value="{{ form.telefono.value|default:'' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="id_password1">Contraseña</label>
+            <input type="password" name="password1" id="id_password1" class="form-control" required>
+            {% for error in form.password1.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="id_password2">Confirmar contraseña</label>
+            <input type="password" name="password2" id="id_password2" class="form-control" required>
+            {% for error in form.password2.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Crear cuenta</button>
+    </form>
+</div>
+{% endblock %}
