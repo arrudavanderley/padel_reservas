@@ -1,0 +1,129 @@
+/* Reservas de pádel — variables de Bootstrap 5.3 reescritas en :root
+   para aplicar la paleta propia sin sobreescribir cada clase a mano. */
+
+:root {
+  --color-fondo: #F5F6F3;
+  --color-superficie: #FFFFFF;
+  --color-texto: #1B2621;
+  --color-texto-suave: #55635C;
+  --color-primario: #1B4F72;
+  --color-primario-oscuro: #123650;
+  --color-acento: #3F8C5F;
+  --color-alerta: #B9432E;
+  --color-borde: #DEE3DE;
+
+  /* Variables de Bootstrap 5.3 */
+  --bs-body-bg: var(--color-fondo);
+  --bs-body-color: var(--color-texto);
+  --bs-font-sans-serif: 'Work Sans', system-ui, -apple-system, sans-serif;
+  --bs-border-radius: .5rem;
+  --bs-border-radius-sm: .375rem;
+  --bs-border-radius-lg: .625rem;
+
+  --bs-primary: var(--color-primario);
+  --bs-primary-rgb: 27, 79, 114;
+  --bs-link-color: var(--color-primario);
+  --bs-link-hover-color: var(--color-primario-oscuro);
+
+  --bs-success: var(--color-acento);
+  --bs-success-rgb: 63, 140, 95;
+  --bs-danger: var(--color-alerta);
+  --bs-danger-rgb: 185, 67, 46;
+}
+
+body {
+  font-family: var(--bs-font-sans-serif);
+}
+
+h1, h2, h3, .marca {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* --- Cabecera --- */
+.navbar {
+  background-color: var(--color-primario);
+}
+.navbar .marca,
+.navbar .nav-link {
+  color: #FFFFFF !important;
+}
+.navbar .nav-link:hover {
+  color: #D7E4EC !important;
+}
+.marca {
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.marca-pelota {
+  display: inline-block;
+  width: .4em;
+  height: .4em;
+  border-radius: 50%;
+  background: var(--color-acento);
+  margin-left: .2em;
+  vertical-align: middle;
+}
+
+/* --- Leyenda de pistas --- */
+.chip-pista {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  font-size: .9rem;
+  color: var(--color-texto-suave);
+}
+.chip-pista .punto {
+  width: .65em;
+  height: .65em;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* --- Calendario --- */
+#calendario {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1rem;
+}
+.fc .fc-button-primary {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+.fc .fc-button-primary:hover {
+  background-color: var(--color-primario-oscuro);
+  border-color: var(--color-primario-oscuro);
+}
+.fc .fc-button-primary:disabled {
+  background-color: var(--color-texto-suave);
+  border-color: var(--color-texto-suave);
+}
+.fc-toolbar-title {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* --- Tarjetas (login, registro, bloqueos) --- */
+.card {
+  border-color: var(--color-borde);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+/* Estilo de respaldo para campos renderizados sin clases de Bootstrap
+   (por ejemplo, {{ form.campo }} en bloqueos_lista.html). */
+.card form input:not([type=checkbox]):not([type=radio]),
+.card form select,
+.card form textarea {
+  width: 100%;
+  padding: .375rem .75rem;
+  margin-bottom: .75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--bs-border-radius-sm);
+  font-family: inherit;
+  color: var(--color-texto);
+}
+
+/* --- Tablas --- */
+.table {
+  --bs-table-color: var(--color-texto);
+  }
