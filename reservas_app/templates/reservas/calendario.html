@@ -1,0 +1,117 @@
+{% extends 'reservas/base.html' %}
+{% load static %}
+
+{% block titulo %}Calendario · Reservas de pádel{% endblock %}
+
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h4 mb-0">Disponibilidad de pistas</h1>
+    <select id="filtro-pista" class="form-select w-auto">
+        <option value="">Todas las pistas</option>
+        {% for pista in pistas %}
+            <option value="{{ pista.id }}">{{ pista.nombre }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="mb-3 d-flex flex-wrap gap-3">
+    {% for pista in pistas %}
+        <span class="chip-pista">
+            <span class="punto" style="background-color: {{ pista.color }}"></span>{{ pista.nombre }}
+        </span>
+    {% endfor %}
+</div>
+
+{% if not user.is_authenticated %}
+    <div class="alert alert-primary">
+        Puedes consultar la disponibilidad libremente. Para reservar una pista,
+        <a href="{% url 'login' %}">inicia sesión</a> o <a href="{% url 'registro' %}">crea una cuenta</a>.
+    </div>
+{% endif %}
+
+<div id="calendario"></div>
+
+<!-- Modal: nueva reserva -->
+<div class="modal fade" id="modalReserva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5">Nueva reserva</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mensaje-error" class="alert alert-danger d-none"></div>
+        <form id="form-reserva">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="id_pista">Pista</label>
+            <select name="pista" id="id_pista" class="form-select" required>
+              {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_fecha">Fecha</label>
+            <input type="date" name="fecha" id="id_fecha" class="form-control" required>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label class="form-label" for="id_hora_inicio">Hora inicio</label>
+              <input type="time" name="hora_inicio" id="id_hora_inicio" class="form-control" required>
+            </div>
+            <div class="col mb-3">
+              <label class="form-label" for="id_hora_fin">Hora fin</label>
+              <input type="time" name="hora_fin" id="id_hora_fin" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="id_recurrente" name="recurrente">
+            <label class="form-check-label" for="id_recurrente">Repetir esta reserva</label>
+          </div>
+          <div id="campos-recurrencia" class="d-none mt-2">
+            <label class="form-label" for="id_frecuencia">Frecuencia</label>
+            <select name="frecuencia" id="id_frecuencia" class="form-select mb-2">
+              <option value="diaria">Diaria</option>
+              <option value="semanal" selected>Semanal</option>
+              <option value="mensual">Mensual</option>
+            </select>
+            <label class="form-label" for="id_fecha_fin_recurrencia">Repetir hasta</label>
+            <input type="date" name="fecha_fin_recurrencia" id="id_fecha_fin_recurrencia" class="form-control">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btn-guardar-reserva" class="btn btn-primary">Reservar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ver / cancelar reserva -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5">Detalle de la reserva</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="detalle-contenido"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" id="btn-cancelar-reserva" class="btn btn-danger d-none">Cancelar reserva</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.21/locales/es.global.min.js"></script>
+<script>
+    const USUARIO_AUTENTICADO = {{ user.is_authenticated|yesno:"true,false" }};
+    const USUARIO_STAFF = {{ user.is_staff|yesno:"true,false" }};
+    const URL_LOGIN = "{% url 'login' %}";
+</script>
+<script src="{% static 'reservas/js/calendario.js' %}"></script>
+{% endblock %}
