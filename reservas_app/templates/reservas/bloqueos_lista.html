@@ -1,0 +1,82 @@
+{% extends 'reservas/base.html' %}
+
+{% block titulo %}Bloqueos de pistas{% endblock %}
+
+{% block contenido %}
+<h1 class="h4 mb-3">Bloqueos de pistas</h1>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card p-3 mb-4">
+            <h2 class="h6">Nuevo bloqueo</h2>
+            <form method="post">
+                {% csrf_token %}
+                <label class="form-label" for="{{ form.pista.id_for_label }}">Pista</label>
+                {{ form.pista }}
+
+                <label class="form-label" for="{{ form.fecha_inicio.id_for_label }}">Desde</label>
+                {{ form.fecha_inicio }}
+
+                <label class="form-label" for="{{ form.fecha_fin.id_for_label }}">Hasta</label>
+                {{ form.fecha_fin }}
+
+                <div class="row">
+                    <div class="col">
+                        <label class="form-label" for="{{ form.hora_inicio.id_for_label }}">Hora inicio</label>
+                        {{ form.hora_inicio }}
+                    </div>
+                    <div class="col">
+                        <label class="form-label" for="{{ form.hora_fin.id_for_label }}">Hora fin</label>
+                        {{ form.hora_fin }}
+                    </div>
+                </div>
+
+                <label class="form-label" for="{{ form.motivo.id_for_label }}">Motivo</label>
+                {{ form.motivo }}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger">Revisa los datos del bloqueo: {{ form.errors }}</div>
+                {% endif %}
+
+                <button class="btn btn-primary w-100 mt-2" type="submit">Crear bloqueo</button>
+            </form>
+            <p class="text-muted small mt-2 mb-0">
+                Para bloquear el día completo, usa 00:00 como hora de inicio y 23:59 como hora de fin.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <h2 class="h6">Bloqueos activos</h2>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Pista</th><th>Desde</th><th>Hasta</th><th>Horario</th><th>Motivo</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for bloqueo in bloqueos %}
+                    <tr>
+                        <td>{{ bloqueo.pista.nombre }}</td>
+                        <td>{{ bloqueo.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ bloqueo.fecha_fin|date:"d/m/Y" }}</td>
+                        <td>{{ bloqueo.hora_inicio|time:"H:i" }}–{{ bloqueo.hora_fin|time:"H:i" }}</td>
+                        <td>{{ bloqueo.motivo }}</td>
+                        <td>
+                            <form method="post" action="{% url 'bloqueo_eliminar' bloqueo.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger" type="submit"
+                                        onclick="return confirm('¿Eliminar este bloqueo?')">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-muted">No hay bloqueos activos.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
