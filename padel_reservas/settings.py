@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # <- ASÍ, con 2 parent, como lo tenías
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- Seguridad ---
 SECRET_KEY = os.getenv(
@@ -25,6 +25,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://*.app.github.dev",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    # --- AÑADIDO PARA RENDER ---
+    "https://*.onrender.com",
+    "https://padel-reservas-zbpn.onrender.com",
 ]
 
 # --- Aplicaciones ---
