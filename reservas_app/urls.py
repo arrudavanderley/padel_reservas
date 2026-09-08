@@ -7,7 +7,7 @@ urlpatterns = [
     # Nueva landing moderna como portada
     path('', views.home, name='home'),
     
-    # Calendario movido a /calendario/ (sigue funcionando)
+    # Calendario movido a /calendario/
     path('calendario/', views.calendario, name='calendario'),
     path('eventos/', views.eventos_json, name='eventos_json'),
 
