@@ -10,9 +10,17 @@ EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
 PASSWORD = os.getenv("DJANGO_SUPERUSER_PASSWORD")
 
 if not USERNAME or not PASSWORD:
-    print("Faltan variables de admin en Render, no se crea nada")
+    print("Faltan variables de admin en Render")
     exit()
 
-if not User.objects.filter(username=USERNAME).exists():
+if User.objects.filter(username=USERNAME).exists():
+    user = User.objects.get(username=USERNAME)
+    user.set_password(PASSWORD)
+    user.email = EMAIL
+    user.is_staff = True
+    user.is_superuser = True
+    user.save()
+    print(f"Superusuario {USERNAME} actualizado con nueva clave!")
+else:
     User.objects.create_superuser(USERNAME, EMAIL, PASSWORD)
     print(f"Superusuario {USERNAME} creado!")
