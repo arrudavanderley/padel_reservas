@@ -1,47 +1,111 @@
 {% extends 'reservas/base.html' %}
+{% block title %}Crear cuenta - Padel Almonte{% endblock %}
 
-{% block titulo %}Crear cuenta{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-center">
+    <div class="hidden md:block">
+        <div class="bg-slate-900 rounded-[32px] p-10 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[80px] opacity-50"></div>
+            <h2 class="text-4xl font-extrabold leading-tight relative">Únete al club.<br>Reserva en segundos.</h2>
+            <p class="text-slate-300 mt-4 text-sm leading-relaxed relative">Crea tu cuenta gratuita y gestiona tus reservas, recibe confirmación por email y recordatorio por WhatsApp.</p>
+            <div class="mt-10 space-y-4 relative">
+                <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-check text-xs"></i></div><p class="text-sm">3 pistas premium 8:00-23:00</p></div>
+                <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-check text-xs"></i></div><p class="text-sm">Cancelación gratuita</p></div>
+                <div class="flex gap-3 items-center"><div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-check text-xs"></i></div><p class="text-sm">Confirmación instantánea por email</p></div>
+            </div>
+            <div class="mt-10 bg-white/10 rounded-2xl p-4 flex items-center gap-4">
+                <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=100&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover">
+                <div><p class="font-bold text-sm">"Reservar nunca fue tan fácil"</p><p class="text-xs text-slate-400">Jugadores de Almonte · 4.9/5</p></div>
+            </div>
+        </div>
+    </div>
 
-{% block contenido %}
-<div class="col-md-6 mx-auto card p-4">
-    <h1 class="h4 mb-3">Crear cuenta</h1>
-
-    <form method="post">
-        {% csrf_token %}
-
-        <div class="mb-3">
-            <label class="form-label" for="id_username">Usuario</label>
-            <input type="text" name="username" id="id_username" class="form-control"
-                   value="{{ form.username.value|default:'' }}" required>
-            {% for error in form.username.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    <div class="bg-white rounded-[28px] border border-slate-100 shadow-sm p-8 md:p-10">
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight">Crear cuenta</h1>
+            <p class="text-sm text-slate-500 mt-2">Ya tienes cuenta? <a href="{% url 'login' %}" class="text-blue-600 font-bold underline">Inicia sesión</a></p>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="id_email">Email</label>
-            <input type="email" name="email" id="id_email" class="form-control"
-                   value="{{ form.email.value|default:'' }}" required>
-            {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        {% if form.errors %}
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 mb-6 text-sm">
+            <p class="font-bold mb-1"><i class="fas fa-circle-exclamation mr-2"></i>Revisa el formulario:</p>
+            <ul class="list-disc ml-5">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
         </div>
+        {% endif %}
 
-        <div class="mb-3">
-            <label class="form-label" for="id_telefono">Teléfono (opcional)</label>
-            <input type="text" name="telefono" id="id_telefono" class="form-control"
-                   value="{{ form.telefono.value|default:'' }}">
-        </div>
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Usuario</label>
+                    <input type="text" name="username" value="{{ form.username.value|default:'' }}" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" placeholder="padelero42" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Teléfono (opcional)</label>
+                    <input type="text" name="telefono" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" placeholder="600 123 456">
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="id_password1">Contraseña</label>
-            <input type="password" name="password1" id="id_password1" class="form-control" required>
-            {% for error in form.password1.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-        </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Nombre</label>
+                    <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm" placeholder="Vanderley">
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Email</label>
+                    <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm" placeholder="tu@email.com" required>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="id_password2">Confirmar contraseña</label>
-            <input type="password" name="password2" id="id_password2" class="form-control" required>
-            {% for error in form.password2.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-        </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Contraseña</label>
+                <input type="password" name="password1" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" placeholder="Mínimo 8 caracteres" required>
+                <p class="text-[11px] text-slate-400 mt-1">Debe tener 8 caracteres, no ser solo números y no ser muy común.</p>
+            </div>
 
-        <button type="submit" class="btn btn-primary w-100">Crear cuenta</button>
-    </form>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Repite contraseña</label>
+                <input type="password" name="password2" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" placeholder="Repite contraseña" required>
+            </div>
+
+            <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-full font-bold hover:bg-black transition shadow-xl">
+                Crear cuenta y empezar a reservar →
+            </button>
+
+            <p class="text-center text-[11px] text-slate-400">Al crear cuenta aceptas nuestras condiciones ficticias de uso. Proyecto demo.</p>
+        </form>
+    </div>
 </div>
 {% endblock %}
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
