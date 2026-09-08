@@ -51,6 +51,6 @@ Entra en /admin con el superusuario que acabas de crear y crea las pistas (Pista
 
 ## Notas
 
-- Dejé el calendario público para consultar sin cuenta. Solo pide login al reservar.
+ 
 - Al cancelar una reserva no la borro, la marco como cancelada para guardar el historial.
 - Zona horaria: Europe/Madrid.
