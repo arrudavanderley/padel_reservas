@@ -1,14 +1,12 @@
 """
-Vistas del sistema de reservas.
+Vistas del sistema de reservas - VERSIÓN ACTUALIZADA CON HOME MODERNA
 
-- calendario: página principal, pública.
-- eventos_json: API que alimenta a FullCalendar (reservas + bloqueos).
-- crear_reserva / cancelar_reserva: requieren login.
-- registro / login / logout: gestión de cuentas.
-- bloqueos_lista / bloqueo_eliminar: solo para staff.
-
-El calendario es visible sin cuenta; reservar y cancelar requieren haber
-iniciado sesión.
+- home: nueva landing page moderna (publica)
+- calendario: calendario de reservas, publico
+- eventos_json: API que alimenta a FullCalendar
+- crear_reserva / cancelar_reserva: requieren login
+- registro / login / logout: gestion de cuentas
+- bloqueos_lista / bloqueo_eliminar: solo para staff
 """
 
 import calendar as calendar_mod
@@ -28,17 +26,11 @@ from django.views.decorators.http import require_GET, require_POST
 from .forms import BloqueoForm, RegistroForm, ReservaForm
 from .models import Bloqueo, ESTADO_CANCELADA, ESTADO_CONFIRMADA, Pista, Reserva, hay_solape
 
-# Límite de seguridad para reservas recurrentes (evita generar miles de filas
-# de golpe por un despiste en el formulario).
-LIMITE_OCURRENCIAS_RECURRENCIA = 104  # ~2 años en semanal, ~3 meses en diaria
-
-# Máximo de reservas confirmadas y futuras que puede tener un mismo usuario
-# a la vez. Una reserva recurrente cuenta como varias.
+LIMITE_OCURRENCIAS_RECURRENCIA = 104
 LIMITE_RESERVAS_ACTIVAS_POR_USUARIO = 5
 
 
 def sumar_periodo(fecha_actual, frecuencia):
-    """Devuelve la siguiente fecha según la frecuencia elegida."""
     if frecuencia == 'diaria':
         return fecha_actual + timedelta(days=1)
     if frecuencia == 'semanal':
@@ -56,13 +48,10 @@ def sumar_periodo(fecha_actual, frecuencia):
 
 
 def _enviar_email_confirmacion(usuario, pista, fechas, hora_inicio, hora_fin):
-    """Envía un email de confirmación. No lanza excepción si falla el envío."""
     if not usuario.email:
         return
-
     rango_horario = f'{hora_inicio.strftime("%H:%M")} - {hora_fin.strftime("%H:%M")}'
     saludo = f'Hola {usuario.first_name or usuario.username},'
-
     if len(fechas) == 1:
         cuerpo = (
             f'{saludo}\n\nTu reserva ha sido confirmada:\n'
@@ -73,24 +62,22 @@ def _enviar_email_confirmacion(usuario, pista, fechas, hora_inicio, hora_fin):
     else:
         listado = '\n'.join(f'- {f.strftime("%d/%m/%Y")}' for f in fechas[:10])
         if len(fechas) > 10:
-            listado += f'\n... y {len(fechas) - 10} fecha(s) más'
+            listado += f'\n... y {len(fechas) - 10} fecha(s) mas'
         cuerpo = (
             f'{saludo}\n\nSe han confirmado {len(fechas)} reservas recurrentes:\n'
             f'Pista: {pista.nombre}\nHora: {rango_horario}\nFechas:\n{listado}\n\n'
             f'¡Nos vemos en la pista!'
         )
-
     send_mail(
-        subject='Reserva confirmada · Pádel',
+        subject='Reserva confirmada · Padel',
         message=cuerpo,
-        from_email=None,  # usa DEFAULT_FROM_EMAIL
+        from_email=None,
         recipient_list=[usuario.email],
         fail_silently=True,
     )
 
 
 def _enviar_email_cancelacion(reserva):
-    """Envía un email de aviso de cancelación. No lanza excepción si falla el envío."""
     if not reserva.usuario.email:
         return
     cuerpo = (
@@ -101,12 +88,19 @@ def _enviar_email_cancelacion(reserva):
         f'Hora: {reserva.hora_inicio.strftime("%H:%M")} - {reserva.hora_fin.strftime("%H:%M")}'
     )
     send_mail(
-        subject='Reserva cancelada · Pádel',
+        subject='Reserva cancelada · Padel',
         message=cuerpo,
         from_email=None,
         recipient_list=[reserva.usuario.email],
         fail_silently=True,
     )
+
+
+# --- NUEVA HOME MODERNA ---
+def home(request):
+    """Landing page moderna con info ficticia - nueva portada"""
+    pistas = Pista.objects.filter(activa=True)
+    return render(request, 'reservas/home.html', {'pistas': pistas})
 
 
 def calendario(request):
@@ -116,7 +110,6 @@ def calendario(request):
 
 @require_GET
 def eventos_json(request):
-    """Reservas confirmadas y bloqueos, en el formato que espera FullCalendar."""
     inicio_str = request.GET.get('start', '')[:10]
     fin_str = request.GET.get('end', '')[:10]
     pista_id = request.GET.get('pista')
@@ -142,9 +135,6 @@ def eventos_json(request):
             'extendedProps': {'tipo': 'reserva', 'propia': es_propia, 'pista_id': reserva.pista_id},
         })
 
-    # Un bloqueo puede abarcar varios días: se genera un evento por cada día
-    # del rango (acotado a lo que pide FullCalendar) para que se vea bien en
-    # las vistas de semana y de día.
     bloqueos = Bloqueo.objects.select_related('pista')
     if pista_id:
         bloqueos = bloqueos.filter(pista_id=pista_id)
@@ -178,22 +168,6 @@ def eventos_json(request):
 @login_required
 @require_POST
 def crear_reserva(request):
-    """
-    Crea una reserva (o varias, si es recurrente). Antes de guardar nada:
-    1. Comprueba el límite de reservas activas del usuario.
-    2. Dentro de una transacción, bloquea la fila de la pista implicada
-       (select_for_update) y comprueba el solapamiento de todas las fechas.
-
-    Nota sobre select_for_update() y SQLite: PostgreSQL y MySQL sí aplican
-    un bloqueo real de fila, así que dos peticiones simultáneas sobre la
-    misma pista se procesan una detrás de otra. SQLite no soporta bloqueo de
-    filas (Reserva.objects.select_for_update() no da error, pero tampoco
-    bloquea nada), así que en SQLite esta llamada no aporta protección extra
-    frente a condiciones de carrera; la comprobación de hay_solape() de más
-    abajo sigue siendo la principal defensa. Si en el futuro migras a
-    PostgreSQL, este mismo código empezará a ofrecer la protección completa
-    sin cambiar nada.
-    """
     form = ReservaForm(request.POST)
     if not form.is_valid():
         return JsonResponse({'success': False, 'errores': form.errors}, status=400)
@@ -254,7 +228,6 @@ def crear_reserva(request):
 @login_required
 @require_POST
 def cancelar_reserva(request, reserva_id):
-    """Cancela (no borra) una reserva propia, o cualquiera si eres staff."""
     reserva = get_object_or_404(Reserva, pk=reserva_id)
     if reserva.usuario_id != request.user.id and not request.user.is_staff:
         return JsonResponse(
@@ -277,7 +250,7 @@ def registro(request):
                 usuario.perfil.save(update_fields=['telefono'])
             login(request, usuario)
             messages.success(request, '¡Cuenta creada correctamente! Ya puedes reservar pista.')
-            return redirect('calendario')
+            return redirect('home')
     else:
         form = RegistroForm()
     return render(request, 'reservas/registro.html', {'form': form})
@@ -285,7 +258,6 @@ def registro(request):
 
 @staff_member_required(login_url='login')
 def bloqueos_lista(request):
-    """Vista exclusiva de staff: listar y crear bloqueos (alternativa rápida al admin)."""
     if request.method == 'POST':
         form = BloqueoForm(request.POST)
         if form.is_valid():
@@ -306,3 +278,4 @@ def bloqueo_eliminar(request, bloqueo_id):
     bloqueo.delete()
     messages.success(request, 'Bloqueo eliminado.')
     return redirect('bloqueos_lista')
+    
