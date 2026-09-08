@@ -5,8 +5,6 @@ pasarela de pago.
 
 Puedes ver el calendario sin entrar, y reservar si te registras. Evita que dos personas reserven la misma pista a la misma hora y deja crear reservas recurrentes.
 
-**🚀 Demo en vivo:** https://padel-reservas-zbpn.onrender.com
-
 ## Funcionalidades
 
 - Calendario interactivo con FullCalendar para ver la disponibilidad.
