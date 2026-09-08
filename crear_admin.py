@@ -1,31 +1,23 @@
-import os
-import sys
-import django
+import os, sys, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'padel_reservas.settings')
 django.setup()
-
 from django.contrib.auth.models import User
 
-USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
-EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
-PASSWORD = os.getenv("DJANGO_SUPERUSER_PASSWORD")
+USERNAME = "Arruda"
+EMAIL = "arrudapedagogosocial@gmail.com"
+PASSWORD = "padel1234@"
 
 try:
-    if not USERNAME or not PASSWORD:
-        print("Faltan variables de admin en Render")
-        sys.exit(0)
-
     if User.objects.filter(username=USERNAME).exists():
-        user = User.objects.get(username=USERNAME)
-        user.set_password(PASSWORD)
-        user.email = EMAIL
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-        print(f"Superusuario {USERNAME} actualizado!")
+        u = User.objects.get(username=USERNAME)
+        u.set_password(PASSWORD)
+        u.email = EMAIL
+        u.is_staff = True
+        u.is_superuser = True
+        u.save()
+        print(f"Superusuario {USERNAME} actualizado FORZADO!")
     else:
         User.objects.create_superuser(USERNAME, EMAIL, PASSWORD)
-        print(f"Superusuario {USERNAME} creado!")
+        print(f"Superusuario {USERNAME} creado FORZADO!")
 except Exception as e:
-    print(f"Error en crear_admin: {e}")
-    sys.exit(0)
+    print(f"Error: {e}")
