@@ -2,11 +2,9 @@
 
 Proyecto web de reservas de pistas de pádel con **diseño premium moderno**, hecho con Django, PostgreSQL y desplegado en Render. 100% funcional y responsive.
 
-🌐 **Demo en vivo:** https://padel-reservas-zbpn.onrender.com/
-
 ### ✨ Qué hace
 
-Reserva tu pista en 20 segundos. Sistema pensado para un club real de Almonte (Huelva) con 3 pistas panorámicas, luz LED y vestuarios. Todo ficticio para demo, pero 100% funcional.
+Reserva tu pista en 20 segundos. Sistema pensado para clubes reales. Todo ficticio para demo, pero 100% funcional.
 
 - Landing page moderna con hero, pistas, cómo funciona y contacto con mapa
 - Calendario interactivo en tiempo real (FullCalendar)
@@ -113,8 +111,8 @@ padel_reservas/
 - Al cancelar, la reserva se marca como `cancelada`, no se borra, para guardar historial
 - Zona horaria: Europe/Madrid
 - Horario club (ficticio): 8:00-23:00, última reserva 21:30
-- Contacto ficticio: Av. de la Doñana 42, Almonte, Huelva · +34 600 123 456 · reservas@padelalmonte.es
-- Proyecto demo creado por Arruda Vanderley - 2026
+- Contacto ficticio.
+- Proyecto demo creado por Arruda Van der Ley - 2026
 
 ### 📄 Licencia
 
