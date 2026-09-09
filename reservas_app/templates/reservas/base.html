@@ -51,15 +51,31 @@
                 <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black">P</div>
                 <span class="font-extrabold text-[18px] tracking-tight">PADEL <span class="font-light">• ALMONTE</span></span>
             </a>
-            <div class="hidden md:flex items-center gap-8 text-sm font-semibold">
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
                 <a href="/#inicio" class="hover:text-blue-600">Inicio</a>
                 <a href="/#pistas" class="hover:text-blue-600">Pistas</a>
                 <a href="/#como" class="hover:text-blue-600">Cómo funciona</a>
                 <a href="/#contacto" class="hover:text-blue-600">Contacto</a>
-                <a href="/calendario/" class="bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition">Reservar</a>
-                <a href="/admin" class="bg-slate-900 text-white px-4 py-2.5 rounded-full hover:bg-black transition text-xs">Admin</a>
+                {% if user.is_authenticated %}
+                    <span class="text-slate-500 text-xs">Hola, {{ user.username }}</span>
+                    <a href="/calendario/" class="bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition">Reservar</a>
+                    <a href="/logout/" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-full hover:bg-slate-200 transition text-xs">Salir</a>
+                {% else %}
+                    <a href="/login/" class="hover:text-blue-600">Iniciar sesión</a>
+                    <a href="/registro/" class="bg-white border border-slate-200 px-5 py-2.5 rounded-full hover:bg-slate-50 transition">Crear cuenta</a>
+                    <a href="/calendario/" class="bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition">Reservar</a>
+                {% endif %}
+                <a href="/admin" class="bg-slate-900 text-white px-3 py-2 rounded-full hover:bg-black transition text-[10px]">ADMIN</a>
             </div>
-            <a href="/calendario/" class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold">Reservar</a>
+            <div class="md:hidden flex items-center gap-2">
+                {% if user.is_authenticated %}
+                    <a href="/calendario/" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold">Reservar</a>
+                    <a href="/logout/" class="text-xs font-bold px-2 py-2 text-slate-500">Salir</a>
+                {% else %}
+                    <a href="/login/" class="text-sm font-bold px-3 py-2">Entrar</a>
+                    <a href="/registro/" class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-bold">Crear cuenta</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
 
@@ -109,12 +125,64 @@
         </div>
     </footer>
 
-    <!-- WHATSAPP FLOAT -->
-    <a href="https://wa.me/34600123456?text=Hola!%20Quiero%20reservar%20pista%20de%20padel" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center text-white text-2xl shadow-[0_8px_24px_rgba(37,211,102,0.4)] hover:scale-105 transition z-50">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <!-- BOTÓN FLOTANTE COMPARTIR -->
+    <button id="share-float" onclick="sharePage()" class="fixed bottom-6 right-6 w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white text-xl shadow-[0_8px_24px_rgba(15,23,42,0.3)] hover:scale-105 hover:bg-black transition z-50" title="Compartir esta página">
+        <i class="fas fa-share-nodes"></i>
+    </button>
+
+    <!-- MODAL COMPARTIR -->
+    <div id="share-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeShare()"></div>
+        <div class="relative max-w-sm mx-auto mt-[30vh] bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.3)] p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-extrabold">Compartir</h3>
+                <button onclick="closeShare()" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center"><i class="fas fa-xmark"></i></button>
+            </div>
+            <p class="text-sm text-slate-500 mb-6">Comparte Padel Almonte con tus amigos y que se unan a la partida.</p>
+            <div class="grid grid-cols-2 gap-3">
+                <a id="share-whatsapp" href="#" target="_blank" class="bg-[#25D366] text-white py-3 rounded-full font-bold text-sm text-center hover:bg-[#20bd5a] transition"><i class="fab fa-whatsapp mr-2"></i>WhatsApp</a>
+                <button onclick="copyLink()" class="bg-slate-900 text-white py-3 rounded-full font-bold text-sm hover:bg-black transition"><i class="fas fa-link mr-2"></i>Copiar link</button>
+                <a id="share-twitter" href="#" target="_blank" class="bg-black text-white py-3 rounded-full font-bold text-sm text-center hover:bg-slate-800 transition"><i class="fab fa-x-twitter mr-2"></i>X / Twitter</a>
+                <a id="share-facebook" href="#" target="_blank" class="bg-[#1877f2] text-white py-3 rounded-full font-bold text-sm text-center hover:bg-[#166fe5] transition"><i class="fab fa-facebook mr-2"></i>Facebook</a>
+            </div>
+            <div class="mt-6 bg-slate-50 rounded-xl p-3 flex items-center gap-3">
+                <i class="fas fa-link text-slate-400"></i>
+                <input id="share-url-input" type="text" readonly class="bg-transparent text-xs flex-1 outline-none" value="">
+            </div>
+            <p id="copy-feedback" class="hidden text-center text-xs text-green-600 font-bold mt-3"><i class="fas fa-check mr-1"></i>¡Link copiado!</p>
+        </div>
+    </div>
 
     <script>
+        function sharePage(){
+            const url = window.location.href;
+            const text = "Reserva tu pista de padel en Almonte en 20 segundos - Padel Almonte";
+            const title = document.title;
+            
+            // Actualiza links del modal
+            document.getElementById('share-url-input').value = url;
+            document.getElementById('share-whatsapp').href = "https://wa.me/?text=" + encodeURIComponent(text + " " + url);
+            document.getElementById('share-twitter').href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(url);
+            document.getElementById('share-facebook').href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url);
+
+            if (navigator.share) {
+                navigator.share({title, text, url}).catch(()=>{});
+            } else {
+                document.getElementById('share-modal').classList.remove('hidden');
+            }
+        }
+        function closeShare(){
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('copy-feedback').classList.add('hidden');
+        }
+        function copyLink(){
+            const input = document.getElementById('share-url-input');
+            input.select();
+            navigator.clipboard.writeText(input.value).then(()=>{
+                document.getElementById('copy-feedback').classList.remove('hidden');
+                setTimeout(()=>{ document.getElementById('copy-feedback').classList.add('hidden'); }, 2000);
+            });
+        }
         function toast(msg){
             const t=document.createElement('div');
             t.className='fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-full text-sm font-semibold shadow-xl z-50';
@@ -123,5 +191,6 @@
             setTimeout(()=>t.remove(), 2500);
         }
     </script>
+
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
