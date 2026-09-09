@@ -1,4 +1,4 @@
-# 🎾 Padel Almonte - Sistema de Reservas
+# 🎾 Sistema de Reservas - Padel
 
 Proyecto web de reservas de pistas de pádel con **diseño premium moderno**, hecho con Django, PostgreSQL y desplegado en Render. 100% funcional y responsive.
 
