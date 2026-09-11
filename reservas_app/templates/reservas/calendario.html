@@ -6,41 +6,79 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js"></script>
 
 <div class="max-w-7xl mx-auto px-6 py-10">
-  <h1 class="text-3xl font-extrabold mb-2">Calendario de pistas</h1>
-  <p class="text-sm text-slate-500 mb-6">Vista semana por defecto • Días arriba • Horas a la izquierda. Haz clic en un hueco para reservar.</p>
-  
-  <div class="bg-white rounded-2xl border p-4 mb-4 flex gap-2">
-    <select id="filtro-pista" class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm">
-      <option value="">Todas las pistas</option>
-      {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
-    </select>
-    <button onclick="calendar.changeView('dayGridMonth')" class="bg-slate-100 px-3 py-2 rounded-full text-xs">Mes</button>
-    <button onclick="calendar.changeView('timeGridWeek')" class="bg-slate-900 text-white px-3 py-2 rounded-full text-xs">Semana</button>
-    <button onclick="calendar.changeView('timeGridDay')" class="bg-slate-100 px-3 py-2 rounded-full text-xs">Día</button>
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+      <p class="text-blue-600 font-bold tracking-widest text-xs uppercase mb-2">Atrae clientes con colores</p>
+      <h1 class="text-4xl font-extrabold tracking-tight">Calendario de pistas</h1>
+      <p class="text-sm text-slate-500 mt-2">
+        <span class="inline-flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block"></span> Reservado</span>
+        <span class="inline-flex items-center gap-1 ml-3"><span class="w-3 h-3 bg-emerald-100 border border-emerald-300 rounded-full inline-block"></span> Libre</span>
+        <span class="inline-flex items-center gap-1 ml-3"><span class="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span> Tu reserva</span>
+        <span class="inline-flex items-center gap-1 ml-3"><span class="w-3 h-3 bg-blue-600 rounded-full inline-block"></span> Evento admin</span>
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">
+        <option value="">Todas las pistas</option>
+        {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
+      </select>
+      <a href="/" class="bg-white border border-slate-200 px-5 py-2.5 rounded-full text-sm font-bold">Inicio</a>
+    </div>
   </div>
 
-  <div class="bg-white rounded-2xl border p-6">
+  <div class="bg-white rounded-2xl border border-slate-100 p-3 flex justify-between items-center mb-6">
+    <div class="text-xs font-bold text-slate-500">Fondo <span class="text-emerald-600">verde claro</span> = hueco libre para reservar • Haz clic en un hueco verde</div>
+    <div class="flex items-center gap-1 bg-slate-100 rounded-full p-1">
+      <button onclick="calendar.changeView('dayGridMonth')" class="px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white">Mes</button>
+      <button onclick="calendar.changeView('timeGridWeek')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white">Semana</button>
+      <button onclick="calendar.changeView('timeGridDay')" class="px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white">Día</button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm p-4 md:p-6">
     <div id="calendar"></div>
   </div>
+
+  {% if user.is_authenticated %}
+  <div class="mt-8 bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm">
+    <h3 class="font-extrabold mb-3">Tus reservas <span id="contador" class="ml-2 text-xs bg-emerald-500 text-white px-3 py-1 rounded-full">0/5</span></h3>
+    <div id="mis-reservas" class="grid md:grid-cols-3 gap-3 text-sm">Cargando...</div>
+  </div>
+  {% endif %}
 </div>
 
 <div id="modal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('modal').classList.add('hidden')"></div>
-  <div class="relative max-w-sm mx-auto mt-20 bg-white rounded-2xl p-6">
-    <h3 class="font-bold mb-4">Nueva reserva</h3>
-    <form id="form-reserva" method="post">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('modal').classList.add('hidden')"></div>
+  <div class="relative max-w-sm mx-auto mt-20 bg-white rounded-[24px] p-6 shadow-xl border">
+    <h3 class="font-extrabold text-lg mb-1">Reservar hueco libre</h3>
+    <p class="text-xs text-emerald-600 font-bold mb-4">🟢 Hueco verde = disponible</p>
+    <form id="form-reserva">
       {% csrf_token %}
-      <select name="pista" class="w-full border rounded-xl px-3 py-2 mb-3">
+      <select name="pista" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm">
         {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
       </select>
-      <input type="date" name="fecha" id="fecha" class="w-full border rounded-xl px-3 py-2 mb-3" required>
-      <input type="time" name="hora_inicio" id="inicio" class="w-full border rounded-xl px-3 py-2 mb-3" required>
-      <input type="time" name="hora_fin" id="fin" class="w-full border rounded-xl px-3 py-2 mb-3" required>
-      <div id="error" class="hidden text-red-600 text-sm mb-3"></div>
-      <button class="w-full bg-slate-900 text-white py-3 rounded-full font-bold">Reservar</button>
+      <input type="date" name="fecha" id="fecha" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm" required>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <input type="time" name="hora_inicio" id="inicio" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
+        <input type="time" name="hora_fin" id="fin" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
+      </div>
+      <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm mb-3"></div>
+      <button class="w-full bg-emerald-600 text-white py-3.5 rounded-full font-bold hover:bg-emerald-700">Confirmar reserva 🟢</button>
     </form>
   </div>
 </div>
+
+<style>
+.fc .fc-toolbar-title{font-weight:800; font-size:1.5rem;}
+.fc .fc-button{border-radius:999px !important; font-weight:700 !important; font-size:0.85rem !important; padding:0.6rem 1.1rem !important;}
+.fc .fc-button-primary{background:#0f172a !important; border-color:#0f172a !important;}
+.fc .fc-event{border-radius:14px !important; border:none !important; padding:6px 10px !important; font-weight:700 !important; box-shadow:0 4px 12px rgba(0,0,0,0.15) !important; border:2px solid rgba(255,255,255,0.4) !important;}
+.fc .fc-col-header-cell{background:#f8fafc; font-weight:800; font-size:11px; text-transform:uppercase; border-color:#f1f5f9 !important;}
+.fc .fc-timegrid-slot{background:#f0fdf4 !important; border-color:#dcfce7 !important;}
+.fc .fc-timegrid-slot:hover{background:#bbf7d0 !important; cursor:pointer;}
+.fc .fc-daygrid-day{border-color:#f1f5f9 !important;}
+.fc .fc-scrollgrid{border-radius:24px !important; overflow:hidden; border:1px solid #e2e8f0 !important;}
+</style>
 
 <script>
 let calendar; let filtro="";
@@ -54,15 +92,39 @@ document.addEventListener('DOMContentLoaded', function(){
     slotMaxTime:'23:00:00',
     allDaySlot:false,
     nowIndicator:true,
+    height:'auto',
     events:function(info, success){
-      const params=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
-      if(filtro) params.append('pista', filtro);
-      fetch('/eventos/?'+params.toString()).then(r=>r.json()).then(d=>success(d));
+      const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
+      if(filtro) p.append('pista', filtro);
+      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(d=>success(d));
     },
     dateClick:function(info){
       document.getElementById('modal').classList.remove('hidden');
       document.getElementById('fecha').value=info.dateStr.slice(0,10);
       document.getElementById('inicio').value=info.dateStr.slice(11,16);
+      const fin=new Date(info.date); fin.setMinutes(fin.getMinutes()+90);
+      document.getElementById('fin').value=String(fin.getHours()).padStart(2,'0')+':'+String(fin.getMinutes()).padStart(2,'0');
+    },
+    eventClick:function(info){
+      if(info.event.extendedProps.tipo==='bloqueo'){ alert('🔵 Evento admin: '+info.event.title); return; }
+      if(info.event.extendedProps.propia){
+        if(confirm('¿Cancelar tu reserva 🟢 '+info.event.title+'?')){
+          fetch(`/reservas/${info.event.id.split('-')[1]}/cancelar/`, {method:'POST', headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
+          .then(r=>r.json()).then(d=>{ if(d.success) location.reload(); else alert(d.error); });
+        }
+      } else {
+        alert('🔴 Reservado: '+info.event.title+'\nEste hueco ya está ocupado');
+      }
+    },
+    eventDidMount:function(info){
+      if(info.event.extendedProps.tipo==='bloqueo'){
+        info.el.style.background='#2563eb'; // AZUL
+      } else if(info.event.extendedProps.propia){
+        info.el.style.background='#10b981'; // VERDE
+      } else {
+        info.el.style.background='#ef4444'; // ROJO
+      }
+      info.el.style.borderRadius='14px';
     }
   });
   calendar.render();
@@ -73,13 +135,22 @@ document.addEventListener('DOMContentLoaded', function(){
     const fd=new FormData(e.target);
     fetch('/reservas/crear/', {method:'POST', body:fd, headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
     .then(async r=>{ const d=await r.json(); if(!r.ok) throw d; return d; })
-    .then(()=>{ alert('¡Reservada!'); location.reload(); })
-    .catch(err=>{ 
-      const div=document.getElementById('error'); 
-      div.classList.remove('hidden'); 
-      div.innerText=err.error||'Error';
+    .then(()=>{ alert('¡Reservada! 🟢'); location.reload(); })
+    .catch(err=>{
+      const div=document.getElementById('error'); div.classList.remove('hidden');
+      div.innerText=err.error?.includes('5 reservas') ? 'Límite 5 reservas alcanzado' : (err.error||'Error');
     });
   });
+
+  const cont=document.getElementById('mis-reservas');
+  if(cont){
+    fetch('/eventos/?start='+new Date().toISOString().slice(0,10)+'&end=2099-12-31').then(r=>r.json()).then(ev=>{
+      const mias=ev.filter(x=>x.extendedProps.propia);
+      const c=document.getElementById('contador'); if(c) c.innerText=mias.length+'/5';
+      if(!mias.length){ cont.innerHTML='<p class="text-slate-400 text-sm">Sin reservas futuras - ¡reserva un hueco verde!</p>'; return; }
+      cont.innerHTML=mias.slice(0,6).map(e=>`<div class="bg-emerald-50 border border-emerald-200 rounded-[16px] p-4"><p class="font-bold text-sm text-emerald-900">🟢 ${e.title}</p><p class="text-xs text-emerald-700">${new Date(e.start).toLocaleString('es-ES')}</p></div>`).join('');
+    });
+  }
 });
 </script>
 {% endblock %}
@@ -104,4 +175,4 @@ document.addEventListener('DOMContentLoaded', function(){
 :where(code, pre, kbd, samp) {
   font-family: "Optimistic Mono", ui-monospace, monospace;
 }
-    </style>
+</style>
