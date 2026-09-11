@@ -3,24 +3,63 @@
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}"><script src="https://cdn.tailwindcss.com"></script>{% endblock %}
 {% block content %}
 <div class="max-w-[1200px] mx-auto mb-8">
-  <div class="bg-white rounded-[24px] border border-slate-200 p-6 shadow-sm">
-    <h2 class="font-extrabold text-[18px] mb-1">🎾 Padel Almonte</h2>
-    <p class="text-sm text-slate-500 mb-5">🔴 Reservado • 🟢 Libre / Tuyo • 🔵 Evento admin</p>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-      <a href="/admin/reservas_app/reserva/dashboard/" class="bg-slate-900 text-white rounded-[16px] p-4 block">
-        <div class="text-xl mb-1">📊</div><div class="font-bold text-sm">Dashboard</div><div class="text-xs text-slate-400">Resumen</div>
+  <div class="bg-white rounded-[24px] border border-slate-200 p-7 shadow-sm">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="font-extrabold text-[20px] tracking-tight">🎾 Padel Almonte - Panel</h2>
+        <p class="text-[13px] text-slate-500 mt-1">Accesos rápidos • Todo con un clic</p>
+      </div>
+      <div class="hidden md:flex items-center gap-2 text-[11px] font-bold">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-500 rounded-full"></span> Reservado</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> Libre</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-full"></span> Evento</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <a href="/admin/reservas_app/reserva/dashboard/" class="group bg-slate-900 text-white rounded-[18px] p-5 hover:bg-black transition shadow-sm">
+        <div class="w-10 h-10 bg-white/10 rounded-[12px] flex items-center justify-center mb-3">📊</div>
+        <div class="font-extrabold text-[14px] text-white">Dashboard</div>
+        <div class="text-[12px] text-slate-300 mt-1">Resumen y estadísticas</div>
       </a>
-      <a href="/admin/reservas_app/reserva/ocupacion/" class="bg-emerald-600 text-white rounded-[16px] p-4 block">
-        <div class="text-xl mb-1">🔥</div><div class="font-bold text-sm">Ocupación</div><div class="text-xs text-emerald-100">Hoy</div>
+      <a href="/admin/reservas_app/reserva/ocupacion/" class="group bg-white border border-slate-200 rounded-[18px] p-5 hover:bg-slate-50 transition shadow-sm">
+        <div class="w-10 h-10 bg-emerald-50 rounded-[12px] flex items-center justify-center mb-3">🔥</div>
+        <div class="font-extrabold text-[14px] text-slate-900">Ocupación hoy</div>
+        <div class="text-[12px] text-slate-500 mt-1">Tiempo real de pistas</div>
       </a>
-      <a href="/admin/reservas_app/reserva/calendario/" class="bg-blue-600 text-white rounded-[16px] p-4 block">
-        <div class="text-xl mb-1">📅</div><div class="font-bold text-sm">Calendario</div><div class="text-xs text-blue-100">Admin bonito</div>
+      <a href="/admin/reservas_app/reserva/calendario/" class="group bg-blue-600 text-white rounded-[18px] p-5 hover:bg-blue-700 transition shadow-sm">
+        <div class="w-10 h-10 bg-white/15 rounded-[12px] flex items-center justify-center mb-3">📅</div>
+        <div class="font-extrabold text-[14px] text-white">Calendario</div>
+        <div class="text-[12px] text-blue-100 mt-1">Vista admin completa</div>
       </a>
-      <a href="/calendario/" class="bg-white border border-slate-200 rounded-[16px] p-4 block">
-        <div class="text-xl mb-1">👤</div><div class="font-bold text-sm text-slate-900">Calendario usuario</div><div class="text-xs text-slate-500">Vista cliente</div>
+      <a href="/calendario/" class="group bg-white border border-slate-200 rounded-[18px] p-5 hover:bg-slate-50 transition shadow-sm">
+        <div class="w-10 h-10 bg-slate-100 rounded-[12px] flex items-center justify-center mb-3">👤</div>
+        <div class="font-extrabold text-[14px] text-slate-900">Vista cliente</div>
+        <div class="text-[12px] text-slate-500 mt-1">Como lo ve el usuario</div>
       </a>
     </div>
   </div>
 </div>
 <div id="content-main">{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}</div>
 {% endblock %}
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
