@@ -1,0 +1,26 @@
+{% extends "admin/index.html" %}
+{% load static %}
+{% block extrahead %}{{ block.super }}<script src="https://cdn.tailwindcss.com"></script>{% endblock %}
+{% block content %}
+<div class="max-w-[1200px] mx-auto mb-8">
+  <div class="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm">
+    <h2 class="font-extrabold text-lg mb-1">🎾 Accesos rápidos Padel Almonte</h2>
+    <p class="text-sm text-slate-500 mb-5">Calendario con colores: 🔴 Reservado • 🟢 Libre / Tuyo • 🔵 Evento admin</p>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <a href="/admin/reservas_app/reserva/dashboard/" class="bg-slate-900 text-white rounded-[16px] p-4 hover:bg-black transition">
+        <div class="text-xl mb-1">📊</div><div class="font-bold text-sm">Dashboard</div><div class="text-xs text-slate-400">Resumen</div>
+      </a>
+      <a href="/admin/reservas_app/reserva/ocupacion-hoy/" class="bg-emerald-600 text-white rounded-[16px] p-4 hover:bg-emerald-700 transition">
+        <div class="text-xl mb-1">🔥</div><div class="font-bold text-sm">Ocupación hoy</div><div class="text-xs text-emerald-100">Tiempo real</div>
+      </a>
+      <a href="/admin/reservas_app/reserva/calendario-admin/" class="bg-blue-600 text-white rounded-[16px] p-4 hover:bg-blue-700 transition">
+        <div class="text-xl mb-1">📅</div><div class="font-bold text-sm">Calendario admin</div><div class="text-xs text-blue-100">Colores bonitos</div>
+      </a>
+      <a href="/calendario/" class="bg-white border border-slate-200 rounded-[16px] p-4 hover:bg-slate-50 transition">
+        <div class="text-xl mb-1">👤</div><div class="font-bold text-sm text-slate-900">Calendario usuario</div><div class="text-xs text-slate-500">Vista cliente</div>
+      </a>
+    </div>
+  </div>
+</div>
+{{ block.super }}
+{% endblock %}
