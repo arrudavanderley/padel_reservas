@@ -33,13 +33,13 @@ CSRF_TRUSTED_ORIGINS = [
 
 # --- Aplicaciones ---
 INSTALLED_APPS = [
+    'reservas_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'reservas_app',
 ]
 
 MIDDLEWARE = [
