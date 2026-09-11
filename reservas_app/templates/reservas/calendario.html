@@ -8,26 +8,18 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
   <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
     <div>
-      <h1 class="text-4xl font-extrabold tracking-tight">Calendario de pistas</h1>
-      <p class="text-sm text-slate-500 mt-2 flex flex-wrap gap-3">
-        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500 rounded-full"></span> Reservado</span>
-        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-100 border-2 border-dashed border-emerald-400 rounded-full"></span> Libre</span>
-        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded-full"></span> Tu reserva</span>
-        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-blue-600 rounded-full"></span> Evento</span>
+      <h1 class="text-[32px] font-extrabold tracking-tight">Calendario de pistas</h1>
+      <p class="text-sm text-slate-500 mt-2 flex flex-wrap gap-3 items-center">
+        <span class="inline-flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Reservado</span>
+        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Libre</span>
+        <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-blue-600 rounded-full"></span> Evento</span>
       </p>
     </div>
-    <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">
-      <option value="">Todas las pistas</option>
-      {% for pista in pistas %}<option value="{{ pista.id }}" data-nombre="{{ pista.nombre }}">{{ pista.nombre }}</option>{% endfor %}
-    </select>
-  </div>
-
-  <div class="bg-white rounded-2xl border border-slate-100 p-3 flex justify-between items-center mb-6 shadow-sm">
-    <div class="text-xs font-bold text-slate-600">Todas las horas con bordes redondos • Sin efecto Excel</div>
-    <div class="flex gap-1 bg-slate-100 rounded-full p-1">
-      <button onclick="calendar.changeView('dayGridMonth')" class="px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white">Mes</button>
-      <button onclick="calendar.changeView('timeGridWeek')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white">Semana</button>
-      <button onclick="calendar.changeView('timeGridDay')" class="px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white">Día</button>
+    <div class="flex gap-2">
+      <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">
+        <option value="">Todas las pistas</option>
+        {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
+      </select>
     </div>
   </div>
 
@@ -37,7 +29,7 @@
 
   {% if user.is_authenticated %}
   <div class="mt-8 bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm">
-    <h3 class="font-extrabold mb-3">Tus reservas <span id="contador" class="ml-2 text-xs bg-emerald-500 text-white px-3 py-1 rounded-full">0/5</span></h3>
+    <h3 class="font-extrabold mb-3">Tus reservas <span id="contador" class="ml-2 text-xs bg-slate-900 text-white px-3 py-1 rounded-full">0/5</span></h3>
     <div id="mis-reservas" class="grid md:grid-cols-3 gap-3 text-sm">Cargando...</div>
   </div>
   {% endif %}
@@ -47,10 +39,10 @@
   <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('modal').classList.add('hidden')"></div>
   <div class="relative max-w-sm mx-auto mt-20 bg-white rounded-[24px] p-6 shadow-xl border">
     <h3 class="font-extrabold text-lg mb-1">Reservar pista</h3>
-    <p class="text-xs text-emerald-600 font-bold mb-4">🟢 Tarjeta libre seleccionada</p>
+    <p class="text-xs text-slate-500 mb-4">Selecciona tu pista y confirma</p>
     <form id="form-reserva">
       {% csrf_token %}
-      <select name="pista" id="modal-pista" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm">
+      <select name="pista" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm">
         {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
       </select>
       <input type="date" name="fecha" id="fecha" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm" required>
@@ -59,39 +51,26 @@
         <input type="time" name="hora_fin" id="fin" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
       </div>
       <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm mb-3"></div>
-      <button class="w-full bg-emerald-600 text-white py-3.5 rounded-full font-bold hover:bg-emerald-700">Confirmar 🟢</button>
+      <button class="w-full bg-slate-900 text-white py-3.5 rounded-full font-bold hover:bg-black">Confirmar reserva</button>
     </form>
   </div>
 </div>
 
 <style>
-/* Quitamos el efecto tabla Excel */
-.fc .fc-timegrid-slot{border-color:transparent !important; background:transparent !important;}
-.fc .fc-timegrid-slot-label{border-color:#f1f5f9 !important;}
-.fc .fc-col-header-cell{background:#f8fafc; font-weight:800; font-size:11px; text-transform:uppercase; border-color:#f1f5f9 !important;}
-.fc .fc-daygrid-day, .fc .fc-timegrid-axis{border-color:#f1f5f9 !important;}
-.fc .fc-scrollgrid{border-radius:24px !important; overflow:hidden; border:1px solid #e2e8f0 !important; background:white;}
-.fc .fc-toolbar-title{font-weight:800; font-size:1.5rem;}
-.fc .fc-button{border-radius:999px !important; font-weight:700 !important; font-size:0.85rem !important;}
+.fc .fc-toolbar-title{font-weight:800; font-size:1.4rem; letter-spacing:-0.02em;}
+.fc .fc-button{border-radius:999px !important; font-weight:700 !important; font-size:0.85rem !important; padding:0.55rem 1rem !important;}
 .fc .fc-button-primary{background:#0f172a !important; border-color:#0f172a !important;}
-.fc .fc-event{border-radius:14px !important; border:none !important; padding:8px 12px !important; font-weight:700 !important; box-shadow:0 4px 12px rgba(0,0,0,0.12) !important; border:2px solid rgba(255,255,255,0.5) !important; cursor:pointer;}
-.fc .fc-event:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.18) !important;}
+.fc .fc-event{border-radius:14px !important; border:none !important; padding:6px 10px !important; font-weight:700 !important; font-size:0.8rem !important; box-shadow:0 3px 10px rgba(0,0,0,0.12) !important;}
+.fc .fc-col-header-cell{background:#f8fafc !important; font-weight:800 !important; font-size:11px !important; text-transform:uppercase !important; letter-spacing:0.05em !important; border-color:#f1f5f9 !important;}
+.fc .fc-timegrid-slot{border-color:#f8fafc !important; background:white !important; height:38px !important;}
+.fc .fc-timegrid-slot-minor{border-color:#f8fafc !important;}
+.fc .fc-daygrid-day, .fc .fc-timegrid-axis{border-color:#f1f5f9 !important;}
+.fc .fc-scrollgrid{border-radius:20px !important; overflow:hidden; border:1px solid #e2e8f0 !important;}
+.fc .fc-timegrid-col{border-color:#f1f5f9 !important;}
 </style>
 
 <script>
 let calendar; let filtro="";
-const SLOTS = ["08:00","09:30","11:00","12:30","14:00","15:30","17:00","18:30","20:00","21:30"];
-const PISTAS = [{% for pista in pistas %}{id:"{{ pista.id }}", nombre:"{{ pista.nombre }}"},{% endfor %}];
-
-function addMinutes(timeStr, mins){
-  const [h,m]=timeStr.split(':').map(Number);
-  const d=new Date(); d.setHours(h,m,0,0); d.setMinutes(d.getMinutes()+mins);
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
-function isOverlapping(slotStart, slotEnd, evStart, evEnd){
-  return (slotStart < evEnd && slotEnd > evStart);
-}
-
 document.addEventListener('DOMContentLoaded', function(){
   const el=document.getElementById('calendar');
   calendar=new FullCalendar.Calendar(el,{
@@ -101,90 +80,36 @@ document.addEventListener('DOMContentLoaded', function(){
     slotMinTime:'08:00:00',
     slotMaxTime:'23:00:00',
     slotDuration:'01:30:00',
+    slotLabelInterval:'01:30:00',
+    slotLabelFormat:{hour:'2-digit', minute:'2-digit', hour12:false},
     allDaySlot:false,
     nowIndicator:true,
     height:'auto',
-    events:function(info, success, failure){
+    events:function(info, success){
       const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
       if(filtro) p.append('pista', filtro);
-      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(ocupadas=>{
-        // Generamos tarjetas libres con mismo formato redondo
-        let libres=[];
-        let startDate=new Date(info.start);
-        let endDate=new Date(info.end);
-        for(let d=new Date(startDate); d < endDate; d.setDate(d.getDate()+1)){
-          const fechaStr=d.toISOString().slice(0,10);
-          const pistasFiltradas = filtro ? PISTAS.filter(p=>p.id===filtro) : PISTAS;
-          pistasFiltradas.forEach(pista=>{
-            SLOTS.forEach(slot=>{
-              const slotStart = new Date(fechaStr+'T'+slot+':00');
-              const slotEnd = new Date(fechaStr+'T'+addMinutes(slot,90)+':00');
-              if(slotEnd.getHours()>=23 && slotEnd.getMinutes()>0) return;
-              // ¿Hay alguna ocupada que solape esta pista y hora?
-              const hayOcupada = ocupadas.some(ev=>{
-                if(ev.extendedProps && ev.extendedProps.pista_id && String(ev.extendedProps.pista_id)!==String(pista.id)) return false;
-                // si no tiene pista_id, comprobamos por título que contenga nombre pista
-                const evStart=new Date(ev.start);
-                const evEnd=new Date(ev.end);
-                return isOverlapping(slotStart, evStart, slotEnd, evEnd) || isOverlapping(evStart, slotStart, evEnd, slotEnd);
-              });
-              if(!hayOcupada){
-                libres.push({
-                  id:'libre-'+pista.id+'-'+fechaStr+'-'+slot,
-                  title:'🟢 Libre • '+pista.nombre,
-                  start:slotStart.toISOString(),
-                  end:slotEnd.toISOString(),
-                  backgroundColor:'#dcfce7',
-                  borderColor:'#86efac',
-                  textColor:'#166534',
-                  classNames:['libre-card'],
-                  extendedProps:{tipo:'libre', pista_id:pista.id, pista_nombre:pista.nombre, fecha:fechaStr, hora:slot}
-                });
-              }
-            });
-          });
-        }
-        // Combinamos ocupadas + libres, todas con bordes redondos
-        success([...ocupadas, ...libres]);
-      }).catch(failure);
+      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(d=>success(d));
     },
     dateClick:function(info){
-      // No usado, usamos click en tarjeta libre
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('fecha').value=info.dateStr.slice(0,10);
+      document.getElementById('inicio').value=info.dateStr.slice(11,16);
+      const fin=new Date(info.date); fin.setMinutes(fin.getMinutes()+90);
+      document.getElementById('fin').value=String(fin.getHours()).padStart(2,'0')+':'+String(fin.getMinutes()).padStart(2,'0');
     },
     eventClick:function(info){
-      const props=info.event.extendedProps;
-      if(props.tipo==='libre'){
-        // Abrir modal con datos de la tarjeta libre
-        document.getElementById('modal').classList.remove('hidden');
-        document.getElementById('modal-pista').value=props.pista_id;
-        document.getElementById('fecha').value=props.fecha;
-        document.getElementById('inicio').value=props.hora;
-        document.getElementById('fin').value=addMinutes(props.hora,90);
-      } else if(props.tipo==='bloqueo'){
-        alert('🔵 Evento admin: '+info.event.title);
-      } else if(props.propia){
-        if(confirm('¿Cancelar tu reserva 🟢 '+info.event.title+'?')){
+      if(info.event.extendedProps.tipo==='bloqueo'){ alert('🔵 Evento admin: '+info.event.title); return; }
+      if(info.event.extendedProps.propia){
+        if(confirm('¿Cancelar tu reserva '+info.event.title+'?')){
           fetch(`/reservas/${info.event.id.split('-')[1]}/cancelar/`, {method:'POST', headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
           .then(r=>r.json()).then(d=>{ if(d.success) location.reload(); else alert(d.error); });
         }
-      } else {
-        alert('🔴 Reservado: '+info.event.title+'\nEste hueco ya está ocupado');
-      }
+      } else { alert('🔴 Reservado: '+info.event.title); }
     },
     eventDidMount:function(info){
-      if(info.event.extendedProps.tipo==='libre'){
-        info.el.style.background='#dcfce7';
-        info.el.style.borderColor='#86efac';
-        info.el.style.color='#166534';
-        info.el.style.borderStyle='dashed';
-        info.el.style.borderWidth='2px';
-      } else if(info.event.extendedProps.tipo==='bloqueo'){
-        info.el.style.background='#2563eb';
-      } else if(info.event.extendedProps.propia){
-        info.el.style.background='#10b981';
-      } else {
-        info.el.style.background='#ef4444';
-      }
+      if(info.event.extendedProps.tipo==='bloqueo'){ info.el.style.background='#2563eb'; }
+      else if(info.event.extendedProps.propia){ info.el.style.background='#10b981'; }
+      else { info.el.style.background='#ef4444'; }
       info.el.style.borderRadius='14px';
     }
   });
@@ -196,9 +121,19 @@ document.addEventListener('DOMContentLoaded', function(){
     const fd=new FormData(e.target);
     fetch('/reservas/crear/', {method:'POST', body:fd, headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
     .then(async r=>{ const d=await r.json(); if(!r.ok) throw d; return d; })
-    .then(()=>{ alert('¡Reservada! 🟢'); location.reload(); })
+    .then(()=>{ alert('¡Reservada!'); location.reload(); })
     .catch(err=>{ const div=document.getElementById('error'); div.classList.remove('hidden'); div.innerText=err.error||'Error'; });
   });
+
+  const cont=document.getElementById('mis-reservas');
+  if(cont){
+    fetch('/eventos/?start='+new Date().toISOString().slice(0,10)+'&end=2099-12-31').then(r=>r.json()).then(ev=>{
+      const mias=ev.filter(x=>x.extendedProps.propia);
+      const c=document.getElementById('contador'); if(c) c.innerText=mias.length+'/5';
+      if(!mias.length){ cont.innerHTML='<p class="text-sm text-slate-400">Sin reservas futuras</p>'; return; }
+      cont.innerHTML=mias.slice(0,6).map(e=>`<div class="bg-slate-50 rounded-[16px] p-4 border"><p class="font-bold text-sm">🟢 ${e.title}</p><p class="text-xs text-slate-500">${new Date(e.start).toLocaleString('es-ES')}</p></div>`).join('');
+    });
+  }
 });
 </script>
 {% endblock %}
