@@ -9,369 +9,183 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js"></script>
 
 <div class="max-w-7xl mx-auto px-6 py-10">
-    <!-- Header -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
         <div>
             <p class="text-blue-600 font-bold tracking-widest text-xs uppercase mb-2">Reservas en tiempo real</p>
             <h1 class="text-4xl font-extrabold tracking-tight">Calendario de pistas</h1>
-            <p class="text-slate-500 mt-2 text-sm">Horas a la derecha • Días arriba • Vista semana por defecto. Tus reservas en <span class="inline-block w-3 h-3 rounded-full bg-blue-600 align-middle"></span> azul.</p>
+            <p class="text-slate-500 mt-2 text-sm">Vista semana por defecto • Días arriba • Horas vertical. Tus reservas en azul.</p>
         </div>
         <div class="flex flex-wrap gap-3">
-            <button onclick="verOcupacionHoy()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-emerald-700 shadow-sm">
+            <button onclick="verOcupacionHoy()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-emerald-700">
                 <i class="fas fa-chart-pie mr-2"></i>Ocupación hoy
             </button>
-            <a href="/" class="bg-white border border-slate-200 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-50"><i class="fas fa-arrow-left mr-2"></i>Inicio</a>
-            <div class="relative">
-                <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold pr-10 appearance-none cursor-pointer">
-                    <option value="">Todas las pistas</option>
-                    {% for pista in pistas %}
-                    <option value="{{ pista.id }}">{{ pista.nombre }}</option>
-                    {% endfor %}
-                </select>
-                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-white text-xs pointer-events-none"></i>
-            </div>
+            <a href="/" class="bg-white border border-slate-200 px-5 py-2.5 rounded-full text-sm font-bold">Inicio</a>
+            <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">
+                <option value="">Todas las pistas</option>
+                {% for pista in pistas %}
+                <option value="{{ pista.id }}">{{ pista.nombre }}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
 
-    <!-- Leyenda + Selector vistas -->
-    <div class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-wrap gap-4 items-center justify-between mb-6">
-        <div class="flex flex-wrap gap-6 text-xs font-semibold">
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#2563eb]"></span> Tu reserva</div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-slate-300"></span> Ocupado</div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#6c757d]"></span> Bloqueo</div>
-            <span class="text-slate-400 hidden md:inline">• 8:00 - 23:00 • Slots 90 min</span>
+    <div class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-wrap gap-4 justify-between mb-6 text-xs font-semibold">
+        <div class="flex gap-6">
+            <span><span class="w-3 h-3 rounded-full bg-blue-600 inline-block mr-1"></span> Tu reserva</span>
+            <span><span class="w-3 h-3 rounded-full bg-slate-300 inline-block mr-1"></span> Ocupado</span>
+            <span><span class="w-3 h-3 rounded-full bg-zinc-500 inline-block mr-1"></span> Bloqueo</span>
         </div>
         <div class="flex gap-2">
-            <button onclick="calendar.changeView('dayGridMonth')" class="vista-btn bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full text-xs font-bold" data-vista="month"><i class="fas fa-calendar mr-1"></i>Mes</button>
-            <button onclick="calendar.changeView('timeGridWeek')" class="vista-btn bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold" data-vista="week"><i class="fas fa-columns mr-1"></i>Semana</button>
-            <button onclick="calendar.changeView('timeGridDay')" class="vista-btn bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full text-xs font-bold" data-vista="day"><i class="fas fa-calendar-day mr-1"></i>Día</button>
+            <button onclick="calendar.changeView('dayGridMonth')" class="bg-slate-100 px-3 py-1 rounded-full">Mes</button>
+            <button onclick="calendar.changeView('timeGridWeek')" class="bg-slate-900 text-white px-3 py-1 rounded-full">Semana</button>
+            <button onclick="calendar.changeView('timeGridDay')" class="bg-slate-100 px-3 py-1 rounded-full">Día</button>
         </div>
     </div>
 
-    <!-- Calendario -->
-    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 p-6 md:p-8">
+    <div class="bg-white rounded-[24px] border border-slate-100 p-6">
         <div id="calendar"></div>
     </div>
 
-    <!-- Mis reservas -->
     {% if user.is_authenticated %}
-    <div class="mt-12">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-lg">Tus próximas reservas (máx. 5 activas)</h3>
-            <span id="contador-reservas" class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold">0 / 5</span>
-        </div>
-        <div id="mis-reservas" class="grid md:grid-cols-3 gap-4">
-            <p class="text-sm text-slate-500">Cargando...</p>
-        </div>
-        <p class="text-xs text-slate-400 mt-3"><i class="fas fa-info-circle mr-1"></i>Límite: 5 reservas activas por usuario. Una recurrente cuenta como varias. Cancela alguna para reservar más.</p>
+    <div class="mt-10">
+        <h3 class="font-bold text-lg mb-3">Tus reservas (máx. 5 activas) <span id="contador" class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full ml-2">0/5</span></h3>
+        <div id="mis-reservas" class="grid md:grid-cols-3 gap-4 text-sm">Cargando...</div>
     </div>
     {% endif %}
 </div>
 
-<!-- Modal Reserva -->
 <div id="modal-reserva" class="fixed inset-0 z-[100] hidden">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="cerrarModal()"></div>
-    <div class="relative max-w-md mx-auto mt-20 bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.3)] p-8">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-extrabold">Nueva reserva</h3>
-            <button onclick="cerrarModal()" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center"><i class="fas fa-xmark"></i></button>
-        </div>
-        
+    <div class="relative max-w-md mx-auto mt-20 bg-white rounded-[24px] p-8">
+        <div class="flex justify-between mb-6"><h3 class="text-xl font-extrabold">Nueva reserva</h3><button onclick="cerrarModal()" class="w-9 h-9 bg-slate-100 rounded-full"><i class="fas fa-xmark"></i></button></div>
         {% if not user.is_authenticated %}
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-sm">
-            <i class="fas fa-lock mr-2 text-amber-600"></i> Necesitas <a href="/login/" class="font-bold text-blue-600 underline">iniciar sesión</a> o <a href="/registro/" class="font-bold text-blue-600 underline">crear cuenta</a>.
-        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-sm">Necesitas <a href="/login/" class="font-bold text-blue-600 underline">iniciar sesión</a> o <a href="/registro/" class="font-bold text-blue-600 underline">crear cuenta</a></div>
         {% endif %}
-
         <form id="form-reserva" class="space-y-4">
             {% csrf_token %}
-            <div>
-                <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Pista</label>
-                <select name="pista" id="id_pista" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none">
-                    {% for pista in pistas %}
-                    <option value="{{ pista.id }}">{{ pista.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <select name="pista" id="id_pista" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm">
+                {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
+            </select>
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Fecha</label>
-                    <input type="date" name="fecha" id="id_fecha" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
-                </div>
-                <div>
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Hora inicio</label>
-                    <input type="time" name="hora_inicio" id="id_hora_inicio" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
-                </div>
+                <input type="date" name="fecha" id="id_fecha" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
+                <input type="time" name="hora_inicio" id="id_hora_inicio" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
             </div>
-            <div>
-                <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Hora fin</label>
-                <input type="time" name="hora_fin" id="id_hora_fin" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
-            </div>
-            
-            <div class="border-t border-slate-100 pt-4">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="recurrente" id="id_recurrente" class="rounded">
-                    <span class="text-sm font-bold">¿Recurrente? (máx. 5)</span>
-                </label>
-                <div id="campos-recurrente" class="hidden mt-4 space-y-4 bg-slate-50 p-4 rounded-2xl">
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Frecuencia</label>
-                        <select name="frecuencia" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
-                            <option value="semanal">Semanal</option>
-                            <option value="diaria">Diaria</option>
-                            <option value="mensual">Mensual</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-widest text-slate-500">Hasta</label>
-                        <input type="date" name="fecha_fin_recurrencia" class="w-full mt-2 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
-                    </div>
-                </div>
-            </div>
-
-            <div id="errores-form" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
-
-            <button type="submit" class="w-full bg-slate-900 text-white py-3.5 rounded-full font-bold hover:bg-black transition disabled:opacity-50" {% if not user.is_authenticated %}disabled{% endif %}>
-                Confirmar reserva
-            </button>
-            <p class="text-center text-xs text-slate-400">Confirmación por email • Límite 5 activas</p>
+            <input type="time" name="hora_fin" id="id_hora_fin" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
+            <div id="errores" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm"></div>
+            <button type="submit" class="w-full bg-slate-900 text-white py-3.5 rounded-full font-bold">Confirmar</button>
         </form>
     </div>
 </div>
 
-<!-- Modal Ocupación Hoy -->
 <div id="modal-ocupacion" class="fixed inset-0 z-[100] hidden">
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="cerrarOcupacion()"></div>
-    <div class="relative max-w-lg mx-auto mt-20 bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.3)] p-8">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-extrabold"><i class="fas fa-chart-pie mr-2 text-emerald-600"></i>Ocupación hoy</h3>
-            <button onclick="cerrarOcupacion()" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center"><i class="fas fa-xmark"></i></button>
-        </div>
-        <div id="ocupacion-content">
-            <p class="text-sm text-slate-500">Cargando ocupación...</p>
-        </div>
-        <div class="mt-6 flex gap-3">
-            <a href="/calendario/" class="flex-1 bg-slate-900 text-white py-3 rounded-full font-bold text-sm text-center">Ver calendario</a>
-            {% if user.is_staff %}
-            <a href="/admin/reservas_app/reserva/" class="flex-1 bg-white border border-slate-200 py-3 rounded-full font-bold text-sm text-center">Admin</a>
-            {% endif %}
-        </div>
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('modal-ocupacion').classList.add('hidden')"></div>
+    <div class="relative max-w-lg mx-auto mt-20 bg-white rounded-[24px] p-8">
+        <h3 class="text-xl font-extrabold mb-4"><i class="fas fa-chart-pie mr-2 text-emerald-600"></i>Ocupación hoy</h3>
+        <div id="ocupacion-content">Cargando...</div>
+        <button onclick="document.getElementById('modal-ocupacion').classList.add('hidden')" class="mt-6 w-full bg-slate-900 text-white py-3 rounded-full font-bold">Cerrar</button>
     </div>
 </div>
 
 <script>
-let calendar;
-let pistaFiltro = "";
-
-function abrirModal(fechaStr, horaStr) {
-    document.getElementById('modal-reserva').classList.remove('hidden');
-    if(fechaStr) document.getElementById('id_fecha').value = fechaStr;
-    if(horaStr) {
-        document.getElementById('id_hora_inicio').value = horaStr;
-        let [h,m] = horaStr.split(':').map(Number);
-        let fin = new Date(); fin.setHours(h, m + 90);
-        let finStr = String(fin.getHours()).padStart(2,'0') + ':' + String(fin.getMinutes()).padStart(2,'0');
-        document.getElementById('id_hora_fin').value = finStr;
-    }
-}
-function cerrarModal() {
-    document.getElementById('modal-reserva').classList.add('hidden');
-    document.getElementById('errores-form').classList.add('hidden');
-}
-function cerrarOcupacion() { document.getElementById('modal-ocupacion').classList.add('hidden'); }
-
-function verOcupacionHoy() {
+let calendar; let filtroPista="";
+function cerrarModal(){ document.getElementById('modal-reserva').classList.add('hidden'); document.getElementById('errores').classList.add('hidden'); }
+function verOcupacionHoy(){
     const hoy = new Date().toISOString().slice(0,10);
     const manana = new Date(Date.now()+86400000).toISOString().slice(0,10);
-    fetch(`/eventos/?start=${hoy}&end=${manana}`)
-    .then(r=>r.json())
-    .then(eventos => {
-        const reservas = eventos.filter(e=>e.extendedProps.tipo !== 'bloqueo');
-        const bloqueos = eventos.filter(e=>e.extendedProps.tipo === 'bloqueo');
-        const totalSlots = 3 * 10; // 3 pistas * 10 slots de 90min (8-23h)
-        const ocupacion = Math.round((reservas.length / totalSlots) * 100);
-        
-        // Por pista
-        let porPista = {};
-        reservas.forEach(ev => {
-            const p = ev.title.split(' - ')[0] || ev.title;
-            porPista[p] = (porPista[p]||0)+1;
-        });
-
-        let html = `
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <div class="bg-slate-50 rounded-2xl p-4 text-center">
-                    <p class="text-2xl font-extrabold">${reservas.length}</p>
-                    <p class="text-xs text-slate-500">reservas hoy</p>
-                </div>
-                <div class="bg-emerald-50 rounded-2xl p-4 text-center">
-                    <p class="text-2xl font-extrabold text-emerald-700">${ocupacion}%</p>
-                    <p class="text-xs text-slate-500">ocupación</p>
-                </div>
-                <div class="bg-amber-50 rounded-2xl p-4 text-center">
-                    <p class="text-2xl font-extrabold">${bloqueos.length}</p>
-                    <p class="text-xs text-slate-500">bloqueos</p>
-                </div>
-            </div>
-            <div class="space-y-3">
-                <h4 class="font-bold text-sm">Por pista hoy:</h4>
-                ${Object.entries(porPista).map(([pista, count]) => `
-                    <div class="flex justify-between items-center bg-slate-50 rounded-xl px-4 py-3">
-                        <span class="font-bold text-sm">${pista}</span>
-                        <span class="text-xs bg-white border px-3 py-1 rounded-full font-bold">${count} reservas</span>
-                    </div>
-                `).join('') || '<p class="text-xs text-slate-400">Sin reservas hoy - ¡pistas libres!</p>'}
-            </div>
-            <div class="mt-4 text-xs text-slate-400">Total slots estimados: ${totalSlots} (3 pistas × 10 franjas 90min). Datos en tiempo real.</div>
-        `;
-        document.getElementById('ocupacion-content').innerHTML = html;
+    fetch(`/eventos/?start=${hoy}&end=${manana}`).then(r=>r.json()).then(ev=>{
+        const reservas = ev.filter(e=>e.extendedProps.tipo!='bloqueo');
+        const total = 30;
+        const porc = Math.round(reservas.length/total*100);
+        let html = `<div class="grid grid-cols-3 gap-3 mb-4"><div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-2xl font-extrabold">${reservas.length}</p><p class="text-xs">reservas hoy</p></div><div class="bg-emerald-50 rounded-2xl p-4 text-center"><p class="text-2xl font-extrabold text-emerald-700">${porc}%</p><p class="text-xs">ocupación</p></div><div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-2xl font-extrabold">${total}</p><p class="text-xs">slots totales</p></div></div>`;
+        html += reservas.map(r=>`<div class="bg-slate-50 rounded-xl px-4 py-2 mb-2 text-sm flex justify-between"><span>${r.title}</span><span>${new Date(r.start).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('') || '<p class="text-sm text-slate-400">Sin reservas hoy</p>';
+        document.getElementById('ocupacion-content').innerHTML=html;
         document.getElementById('modal-ocupacion').classList.remove('hidden');
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('calendar');
+document.addEventListener('DOMContentLoaded', function(){
+    const el = document.getElementById('calendar');
     const filtro = document.getElementById('filtro-pista');
-
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'es',
-        initialView: 'timeGridWeek', // SEMANA POR DEFECTO como pediste
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    calendar = new FullCalendar.Calendar(el, {
+        locale:'es',
+        initialView:'timeGridWeek',
+        headerToolbar:{left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay'},
+        slotMinTime:'08:00:00',
+        slotMaxTime:'23:00:00',
+        allDaySlot:false,
+        nowIndicator:true,
+        height:'auto',
+        events:function(info, success, failure){
+            const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
+            if(filtroPista) p.append('pista', filtroPista);
+            fetch(`/eventos/?${p.toString()}`).then(r=>r.json()).then(d=>success(d)).catch(failure);
         },
-        slotMinTime: '08:00:00',
-        slotMaxTime: '23:00:00',
-        allDaySlot: false,
-        nowIndicator: true,
-        height: 'auto',
-        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        events: function(info, successCallback, failureCallback) {
-            const params = new URLSearchParams({
-                start: info.startStr.slice(0,10),
-                end: info.endStr.slice(0,10),
-            });
-            if(pistaFiltro) params.append('pista', pistaFiltro);
-            fetch(`/eventos/?${params.toString()}`)
-                .then(r => r.json())
-                .then(data => successCallback(data))
-                .catch(e => failureCallback(e));
+        dateClick:function(info){
+            document.getElementById('modal-reserva').classList.remove('hidden');
+            document.getElementById('id_fecha').value=info.dateStr.slice(0,10);
+            document.getElementById('id_hora_inicio').value=info.dateStr.slice(11,16);
         },
-        dateClick: function(info) {
-            const fecha = info.dateStr.slice(0,10);
-            const hora = info.dateStr.slice(11,16);
-            abrirModal(fecha, hora);
-            if(pistaFiltro) document.getElementById('id_pista').value = pistaFiltro;
-        },
-        eventClick: function(info) {
-            const props = info.event.extendedProps;
-            if(props.tipo === 'bloqueo') {
-                alert('⛔ ' + info.event.title + '\\nNo se puede reservar.');
-                return;
-            }
-            if(props.propia) {
-                if(confirm('¿Cancelar tu reserva de ' + info.event.title + '?')) {
-                    fetch(`/reservas/${info.event.id.split('-')[1]}/cancelar/`, {
-                        method: 'POST',
-                        headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
-                    }).then(r => r.json()).then(data => {
-                        if(data.success) {
-                            info.event.remove();
-                            location.reload();
-                        } else {
-                            alert(data.error || 'No se pudo cancelar');
-                        }
-                    });
+        eventClick:function(info){
+            if(info.event.extendedProps.tipo==='bloqueo'){ alert('Bloqueado: '+info.event.title); return; }
+            if(info.event.extendedProps.propia){
+                if(confirm('¿Cancelar '+info.event.title+'?')){
+                    fetch(`/reservas/${info.event.id.split('-')[1]}/cancelar/`, {method:'POST', headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
+                    .then(r=>r.json()).then(d=>{ if(d.success) location.reload(); else alert(d.error); });
                 }
-            } else {
-                alert(info.event.title + '\\n' + info.event.start.toLocaleString());
             }
-        },
+        }
     });
     calendar.render();
+    filtro.addEventListener('change', function(){ filtroPista=this.value; calendar.refetchEvents(); });
 
-    // Botones vista activa
-    document.querySelectorAll('.vista-btn').forEach(btn=>{
-        btn.addEventListener('click', function(){
-            document.querySelectorAll('.vista-btn').forEach(b=>{ b.className='vista-btn bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full text-xs font-bold'; });
-            this.className='vista-btn bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold';
-        });
-    });
-
-    filtro.addEventListener('change', function() {
-        pistaFiltro = this.value;
-        calendar.refetchEvents();
-    });
-
-    document.getElementById('id_recurrente').addEventListener('change', function() {
-        document.getElementById('campos-recurrente').classList.toggle('hidden', !this.checked);
-    });
-
-    document.getElementById('form-reserva').addEventListener('submit', function(e) {
+    document.getElementById('form-reserva').addEventListener('submit', function(e){
         e.preventDefault();
-        const formData = new FormData(this);
-        const btn = this.querySelector('button[type=submit]');
-        btn.disabled = true; btn.innerText = 'Guardando...';
-        
-        fetch('{% url "crear_reserva" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
-        }).then(async r => {
-            const data = await r.json();
-            if(!r.ok) throw data;
-            return data;
-        }).then(data => {
-            cerrarModal();
-            alert('¡Reserva confirmada! Email enviado.');
-            calendar.refetchEvents();
-            btn.disabled = false; btn.innerText = 'Confirmar reserva';
-            this.reset();
-            document.getElementById('campos-recurrente').classList.add('hidden');
-            location.reload();
-        }).catch(err => {
-            const div = document.getElementById('errores-form');
-            let msg = 'Error al reservar.';
-            if(err.errores) {
-                msg = Object.values(err.errores).flat().join('<br>');
-            } else if(err.error) {
-                if(err.error.includes('5 reservas')) msg = '❌ Has alcanzado el límite de 5 reservas activas. Cancela alguna para reservar más.';
-                else msg = err.error;
-            }
-            div.innerHTML = msg;
-            div.classList.remove('hidden');
-            btn.disabled = false; btn.innerText = 'Confirmar reserva';
+        const fd=new FormData(this);
+        const btn=this.querySelector('button'); btn.disabled=true; btn.innerText='Guardando...';
+        fetch('/reservas/crear/', {method:'POST', body:fd, headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
+        .then(async r=>{ const d=await r.json(); if(!r.ok) throw d; return d; })
+        .then(()=>{ cerrarModal(); alert('¡Reserva confirmada!'); location.reload(); })
+        .catch(err=>{
+            const div=document.getElementById('errores');
+            let msg='Error';
+            if(err.errores) msg=Object.values(err.errores).flat().join('<br>');
+            else if(err.error) msg=err.error.includes('5 reservas') ? '❌ Límite 5 reservas activas alcanzado. Cancela alguna.' : err.error;
+            div.innerHTML=msg; div.classList.remove('hidden');
+            btn.disabled=false; btn.innerText='Confirmar';
         });
     });
 
-    const contMis = document.getElementById('mis-reservas');
-    const contContador = document.getElementById('contador-reservas');
-    if(contMis) {
-        fetch('/eventos/?start=' + new Date().toISOString().slice(0,10) + '&end=2099-12-31')
-        .then(r => r.json())
-        .then(eventos => {
-            const mias = eventos.filter(ev => ev.extendedProps.propia);
-            if(contContador) contContador.innerText = `${mias.length} / 5`;
-            if(mias.length === 0) {
-                contMis.innerHTML = '<p class="text-sm text-slate-400 col-span-3">No tienes reservas futuras.</p>';
-                return;
-            }
-            contMis.innerHTML = mias.slice(0,6).map(ev => `
-                <div class="bg-white border border-slate-100 rounded-2xl p-4 flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-sm">${ev.title}</p>
-                        <p class="text-xs text-slate-500">${new Date(ev.start).toLocaleString('es-ES', {weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})} - ${new Date(ev.end).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})}</p>
-                    </div>
-                    <span class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold">Confirmada</span>
-                </div>
-            `).join('');
+    const cont=document.getElementById('mis-reservas');
+    if(cont){
+        fetch('/eventos/?start='+new Date().toISOString().slice(0,10)+'&end=2099-12-31').then(r=>r.json()).then(ev=>{
+            const mias=ev.filter(x=>x.extendedProps.propia);
+            document.getElementById('contador').innerText=mias.length+'/5';
+            if(!mias.length){ cont.innerHTML='<p class="text-slate-400">Sin reservas futuras</p>'; return; }
+            cont.innerHTML=mias.slice(0,6).map(e=>`<div class="bg-white border rounded-2xl p-3"><p class="font-bold text-sm">${e.title}</p><p class="text-xs text-slate-500">${new Date(e.start).toLocaleString('es-ES')}</p></div>`).join('');
         });
     }
 });
 </script>
-
-<style>
-/* Hacer que las horas aparezcan a la DERECHA como pediste */
-.fc .fc-timegrid-axis { 
-    /* mueve
+{% endblock %}
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
