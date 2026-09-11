@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>📊 Ocupación hoy - {{ hoy }}</h1>
+<p>Total reservas hoy: <b>{{ total }}</b></p>
+<table style="width:100%; margin-top:16px; border-collapse:collapse;">
+<tr style="text-align:left; border-bottom:1px solid #ddd;"><th>Hora</th><th>Pista</th><th>Usuario</th></tr>
+{% for r in reservas %}
+<tr style="border-bottom:1px solid #eee;"><td>{{ r.hora_inicio }}-{{ r.hora_fin }}</td><td>{{ r.pista.nombre }}</td><td>{{ r.usuario.username }}</td></tr>
+{% empty %}<tr><td colspan="3">Sin reservas hoy</td></tr>{% endfor %}
+</table>
+<div style="margin-top:20px;">
+<a href="/admin/reservas_app/reserva/dashboard/" style="background:#0f172a; color:white; padding:8px 16px; border-radius:20px; text-decoration:none;">Volver al dashboard</a>
+</div>
+{% endblock %}

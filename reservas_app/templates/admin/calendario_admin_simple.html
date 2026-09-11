@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% block extrahead %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js"></script>
+{% endblock %}
+{% block content %}
+<h1>📅 Calendario Admin - 3 vistas (Mes/Semana/Día)</h1>
+<p style="color:#64748b;">Vista semana por defecto como pediste: días arriba, horas vertical.</p>
+<div style="margin:12px 0; display:flex; gap:8px;">
+<button onclick="calendar.changeView('dayGridMonth')" style="padding:6px 12px; border-radius:20px; border:1px solid #ddd;">Mes</button>
+<button onclick="calendar.changeView('timeGridWeek')" style="padding:6px 12px; border-radius:20px; background:#0f172a; color:white;">Semana</button>
+<button onclick="calendar.changeView('timeGridDay')" style="padding:6px 12px; border-radius:20px; border:1px solid #ddd;">Día</button>
+<select id="filtro-pista" style="margin-left:auto; padding:6px 12px; border-radius:20px;"><option value="">Todas</option>{% for p in pistas %}<option value="{{ p.id }}">{{ p.nombre }}</option>{% endfor %}</select>
+</div>
+<div id="calendar-admin" style="background:white; padding:16px; border-radius:16px; border:1px solid #eee;"></div>
+
+<script>
+let calendar; let filtro="";
+document.addEventListener('DOMContentLoaded', function(){
+  const el=document.getElementById('calendar-admin');
+  calendar=new FullCalendar.Calendar(el,{
+    locale:'es',
+    initialView:'timeGridWeek',
+    headerToolbar:{left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay'},
+    slotMinTime:'08:00:00',
+    slotMaxTime:'23:00:00',
+    allDaySlot:false,
+    height:'auto',
+    events:function(info, success){
+      const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
+      if(filtro) p.append('pista', filtro);
+      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(d=>success(d));
+    }
+  });
+  calendar.render();
+  document.getElementById('filtro-pista').addEventListener('change', e=>{ filtro=e.target.value; calendar.refetchEvents(); });
+});
+</script>
+{% endblock %}

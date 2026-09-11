@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>🎾 Dashboard Padel - {{ hoy }}</h1>
+<p>Total hoy: <b>{{ total_hoy }}</b> | Total mes: <b>{{ total_mes }}</b></p>
+
+<h2 style="margin-top:20px;">Por pista (30 días)</h2>
+<ul>
+{% for p in por_pista %}<li>{{ p.pista__nombre }} - {{ p.total }} reservas</li>{% empty %}<li>Sin datos</li>{% endfor %}
+</ul>
+
+<h2 style="margin-top:20px;">Top usuarios</h2>
+<ul>
+{% for u in top_usuarios %}<li>{{ u.usuario__username }} - {{ u.total }}</li>{% empty %}<li>Sin datos</li>{% endfor %}
+</ul>
+
+<div style="margin-top:20px;">
+<a href="/admin/reservas_app/reserva/ocupacion-hoy/" style="background:#0f172a; color:white; padding:8px 16px; border-radius:20px; text-decoration:none; margin-right:8px;">Ocupación hoy</a>
+<a href="/admin/reservas_app/reserva/calendario-admin/" style="background:#2563eb; color:white; padding:8px 16px; border-radius:20px; text-decoration:none;">Calendario 3 vistas</a>
+</div>
+{% endblock %}
