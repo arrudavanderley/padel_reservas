@@ -13,7 +13,7 @@ class PistaAdmin(admin.ModelAdmin):
 class ReservaAdmin(admin.ModelAdmin):
     list_display = ('id','usuario','pista','fecha','hora_inicio','hora_fin','estado')
     list_filter = ('estado','pista','fecha')
-    search_fields = ('usuario__username',)
+    search_fields = ('usuario__username','usuario__email')
     
     def get_urls(self):
         urls = super().get_urls()
@@ -31,19 +31,20 @@ class ReservaAdmin(admin.ModelAdmin):
         por_pista = Reserva.objects.filter(fecha__gte=hoy-timedelta(days=30), estado='confirmada').values('pista__nombre').annotate(total=Count('id')).order_by('-total')
         top = Reserva.objects.filter(estado='confirmada').values('usuario__username').annotate(total=Count('id')).order_by('-total')[:5]
         context = dict(self.admin_site.each_context(request), hoy=hoy, total_hoy=total_hoy, total_mes=total_mes, por_pista=por_pista, top_usuarios=top)
-        return TemplateResponse(request, "admin/dashboard_simple.html", context)
+        return TemplateResponse(request, "admin/dashboard_bonito.html", context)
 
     def ocupacion_view(self, request):
         hoy = date.today()
-        reservas = Reserva.objects.filter(fecha=hoy, estado='confirmada').select_related('pista','usuario')
+        reservas = Reserva.objects.filter(fecha=hoy, estado='confirmada').select_related('pista','usuario').order_by('hora_inicio')
         context = dict(self.admin_site.each_context(request), hoy=hoy, reservas=reservas, total=reservas.count())
-        return TemplateResponse(request, "admin/ocupacion_simple.html", context)
+        return TemplateResponse(request, "admin/ocupacion_bonito.html", context)
 
     def calendario_admin_view(self, request):
         pistas = Pista.objects.all()
         context = dict(self.admin_site.each_context(request), pistas=pistas)
-        return TemplateResponse(request, "admin/calendario_admin_simple.html", context)
+        return TemplateResponse(request, "admin/calendario_admin_bonito.html", context)
 
 @admin.register(Bloqueo)
 class BloqueoAdmin(admin.ModelAdmin):
-    list_display = ('pista','fecha_inicio','fecha_fin','motivo')
+    list_display = ('id','pista','fecha_inicio','fecha_fin','motivo')
+    
