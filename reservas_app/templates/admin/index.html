@@ -3,24 +3,6 @@
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-  body{background:#0b1220 !important;}
-  #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;}
-  #header a:link,#header a:visited{color:#e2e8f0;}
-  #branding h1,#branding h1 a:link,#branding h1 a:visited{color:#fff !important;font-weight:700;}
-  #user-tools a{color:#93c5fd !important;}
-  .breadcrumbs{background:#0f172a !important;color:#64748b !important;border:0 !important;}
-  .breadcrumbs a{color:#93c5fd !important;}
-  #content{color:#e2e8f0;}
-  .module{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:16px !important;overflow:hidden;}
-  .module h2,.module caption{background:#1e293b !important;color:#f1f5f9 !important;font-weight:700 !important;}
-  .module table,.module table tr{background:transparent !important;}
-  .module table th,.module table td{border-bottom:1px solid #1f2937 !important;color:#cbd5e1 !important;}
-  .module a:link,.module a:visited{color:#93c5fd !important;}
-  #content-main a.addlink{color:#34d399 !important;}
-  #footer{background:transparent;color:#475569;}
-</style>
 {% endblock %}
 {% block content %}
 <div class="max-w-[1200px] mx-auto mb-8">

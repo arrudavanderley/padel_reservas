@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | Padel Almonte{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Padel Almonte</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="mi-nav">
+  <a href="{% url 'admin:index' %}"><i class="fas fa-house mr-1"></i>Inicio</a>
+  <a href="{% url 'admin:app_list' app_label='reservas_app' %}"><i class="fas fa-table-tennis-paddle-ball mr-1"></i>Reservas de pádel</a>
+  <a href="{% url 'admin:app_list' app_label='auth' %}"><i class="fas fa-users mr-1"></i>Autenticación y autorización</a>
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root{color-scheme:dark;}
+  body{background:#0b1220 !important;color:#e2e8f0 !important;}
+  #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;padding:14px 24px;}
+  #header a:link,#header a:visited{color:#e2e8f0;}
+  #branding h1,#branding h1 a:link,#branding h1 a:visited{color:#fff !important;font-weight:800;font-size:1.15rem;}
+  #user-tools{font-size:12px;}
+  #user-tools a{color:#93c5fd !important;}
+
+  /* Sin barra lateral: navegación persistente propia en su lugar */
+  #nav-sidebar,.toggle-nav-sidebar{display:none !important;}
+  #content{margin-left:0 !important;}
+  .main{display:block !important;}
+
+  .mi-nav{background:#0f172a;border-bottom:1px solid #1e293b;padding:10px 24px;display:flex;gap:8px;flex-wrap:wrap;}
+  .mi-nav a{background:#1e293b;color:#cbd5e1 !important;padding:7px 16px;border-radius:999px;font-size:12.5px;font-weight:700;text-decoration:none;transition:.15s;}
+  .mi-nav a:hover{background:#334155;color:#fff !important;}
+
+  #content-main,#content{color:#e2e8f0;}
+  .module{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:16px !important;overflow:hidden;margin-bottom:20px;}
+  .module h2,.module caption,fieldset.module h2{background:#1e293b !important;color:#f1f5f9 !important;font-weight:700 !important;padding:10px 16px !important;}
+  .module table,.module table tr,.module table tbody{background:transparent !important;}
+  .module table th,.module table td{border-bottom:1px solid #1f2937 !important;color:#cbd5e1 !important;}
+  .module a:link,.module a:visited{color:#93c5fd !important;}
+  #content-main a.addlink{color:#34d399 !important;}
+
+  /* Formularios (añadir / editar) */
+  .form-row{border-bottom:1px solid #1f2937 !important;padding:12px 16px !important;}
+  label{color:#cbd5e1 !important;}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=url],
+  input[type=date],input[type=time],textarea,select{
+    background:#1e293b !important;border:1px solid #334155 !important;color:#f1f5f9 !important;border-radius:8px !important;
+  }
+  input:focus,textarea:focus,select:focus{border-color:#2563eb !important;outline:none !important;}
+  .submit-row{background:transparent !important;border-top:1px solid #1f2937 !important;}
+  .submit-row input.default,input[type=submit].default{background:#2563eb !important;color:#fff !important;border-radius:999px !important;}
+  .submit-row input,.submit-row a{border-radius:999px !important;}
+  .help,p.help,div.help{color:#64748b !important;}
+
+  /* Listados */
+  #changelist-search,#toolbar{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:14px !important;}
+  #toolbar input[type=text]{background:#1e293b !important;color:#f1f5f9 !important;border:1px solid #334155 !important;}
+  #changelist-filter{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:14px !important;}
+  #changelist-filter h2,#changelist-filter h3{color:#f1f5f9 !important;background:transparent !important;}
+  #changelist-filter a{color:#93c5fd !important;}
+  #changelist-filter li.selected a{color:#fff !important;font-weight:700;}
+  .paginator{color:#94a3b8 !important;}
+  .paginator a{color:#93c5fd !important;}
+  .actions{background:#111827 !important;border-color:#1f2937 !important;color:#cbd5e1 !important;}
+
+  .messagelist li{border-radius:12px !important;}
+  a:link,a:visited{color:#93c5fd;}
+  #footer{background:transparent;color:#475569;}
+</style>
+{% endblock %}
