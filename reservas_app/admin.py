@@ -28,3 +28,48 @@ class ReservaAdmin(admin.ModelAdmin):
         hoy = date.today()
         total_hoy = Reserva.objects.filter(fecha=hoy, estado='confirmada').count()
         total_mes = Reserva.objects.filter(fecha__gte=hoy.replace(day=1), estado='confirmada').count()
+        por_pista = Reserva.objects.filter(fecha__gte=hoy-timedelta(days=30), estado='confirmada').values('pista__nombre').annotate(total=Count('id')).order_by('-total')
+        top = Reserva.objects.filter(estado='confirmada').values('usuario__username').annotate(total=Count('id')).order_by('-total')[:5]
+        context = dict(self.admin_site.each_context(request), hoy=hoy, total_hoy=total_hoy, total_mes=total_mes, por_pista=por_pista, top_usuarios=top)
+        return TemplateResponse(request, "admin/dashboard.html", context)
+
+    def ocupacion_view(self, request):
+        hoy = date.today()
+        reservas = Reserva.objects.filter(fecha=hoy, estado='confirmada').select_related('pista','usuario').order_by('hora_inicio')
+        context = dict(self.admin_site.each_context(request), hoy=hoy, reservas=reservas, total=reservas.count())
+        return TemplateResponse(request, "admin/ocupacion.html", context)
+
+    def calendario_view(self, request):
+        pistas = Pista.objects.all()
+        context = dict(self.admin_site.each_context(request), pistas=pistas)
+        return TemplateResponse(request, "admin/calendario.html", context)
+
+@admin.register(Bloqueo)
+class BloqueoAdmin(admin.ModelAdmin):
+    list_display = ('id','pista','fecha_inicio','fecha_fin','motivo')
+
+
+# --- Contexto extra para la página de inicio del admin ---------------------
+# admin/index.html (personalizado) ahora muestra el Dashboard y el Calendario
+# embebidos, así que la vista de inicio necesita los mismos datos que
+# dashboard_view/calendario_view. AdminSite.index() es la vista propia de
+# Django (no un método nuestro), así que la envolvemos para añadirle estos
+# datos sin tener que crear una subclase de AdminSite.
+_admin_index_original = admin.site.index
+
+def _index_con_contexto(request, extra_context=None):
+    hoy = date.today()
+    extra_context = extra_context or {}
+    extra_context.update({
+        'hoy': hoy,
+        'total_hoy': Reserva.objects.filter(fecha=hoy, estado='confirmada').count(),
+        'total_mes': Reserva.objects.filter(fecha__gte=hoy.replace(day=1), estado='confirmada').count(),
+        'por_pista': Reserva.objects.filter(fecha__gte=hoy - timedelta(days=30), estado='confirmada')
+            .values('pista__nombre').annotate(total=Count('id')).order_by('-total'),
+        'top_usuarios': Reserva.objects.filter(estado='confirmada')
+            .values('usuario__username').annotate(total=Count('id')).order_by('-total')[:5],
+        'pistas': Pista.objects.all(),
+    })
+    return _admin_index_original(request, extra_context)
+
+admin.site.index = _index_con_contexto
