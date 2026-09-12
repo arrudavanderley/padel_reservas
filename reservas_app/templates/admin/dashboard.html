@@ -1,27 +1,69 @@
 {% extends "admin/base_site.html" %}
-{% block extrahead %}<script src="https://cdn.tailwindcss.com"></script>{% endblock %}
+{% block extrahead %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body{background:#0b1220 !important;}
+  #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;}
+  #header a:link,#header a:visited{color:#e2e8f0;}
+  #branding h1,#branding h1 a:link,#branding h1 a:visited{color:#fff !important;font-weight:700;}
+  #user-tools a{color:#93c5fd !important;}
+  .breadcrumbs{background:#0f172a !important;color:#64748b !important;border:0 !important;}
+  .breadcrumbs a{color:#93c5fd !important;}
+  #content{color:#e2e8f0;}
+  #footer{background:transparent;color:#475569;}
+</style>
+{% endblock %}
 {% block content %}
 <div class="max-w-[1200px] mx-auto">
-  <div class="flex justify-between items-center mb-6">
-    <div><h1 class="text-[28px] font-extrabold">Dashboard</h1><p class="text-sm text-slate-500">{{ hoy }} • 🔴 Reservado • 🟢 Libre • 🔵 Evento</p></div>
+  <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-6">
+    <div>
+      <h1 class="text-[26px] font-extrabold text-white">Dashboard</h1>
+      <p class="text-sm text-slate-400 mt-1">{{ hoy }}</p>
+    </div>
     <div class="flex gap-2">
-      <a href="/admin/reservas_app/reserva/ocupacion/" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">Ocupación</a>
-      <a href="/admin/reservas_app/reserva/calendario/" class="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-bold">Calendario</a>
+      <a href="/admin/reservas_app/reserva/ocupacion/" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-5 py-2.5 rounded-full text-sm font-bold transition"><i class="fas fa-clock mr-1.5"></i>Ocupación</a>
+      <a href="/admin/reservas_app/reserva/calendario/" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-bold transition"><i class="fas fa-calendar-days mr-1.5"></i>Calendario</a>
     </div>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-[24px] border p-6 shadow-sm"><p class="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Hoy</p><p class="text-4xl font-extrabold mt-2">{{ total_hoy }}</p><p class="text-sm text-slate-500 mt-1">🔴 ocupadas</p></div>
-    <div class="bg-white rounded-[24px] border p-6 shadow-sm"><p class="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Este mes</p><p class="text-4xl font-extrabold mt-2">{{ total_mes }}</p><p class="text-sm text-slate-500 mt-1">total</p></div>
-    <div class="bg-blue-600 rounded-[24px] p-6 text-white shadow-sm"><p class="text-[11px] font-bold tracking-widest text-blue-200 uppercase">Colores</p><p class="text-sm font-bold mt-2">🔴 Reservado • 🟢 Libre/Tuyo • 🔵 Evento</p></div>
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+      <p class="text-[11px] font-bold tracking-widest text-slate-500 uppercase">Hoy</p>
+      <p class="text-4xl font-extrabold mt-2 text-white">{{ total_hoy }}</p>
+      <p class="text-sm text-rose-400 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-rose-400 rounded-full"></span>ocupadas</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+      <p class="text-[11px] font-bold tracking-widest text-slate-500 uppercase">Este mes</p>
+      <p class="text-4xl font-extrabold mt-2 text-white">{{ total_mes }}</p>
+      <p class="text-sm text-slate-400 mt-1">reservas totales</p>
+    </div>
+    <div class="bg-blue-600 rounded-[24px] p-6 text-white">
+      <p class="text-[11px] font-bold tracking-widest text-blue-200 uppercase mb-3">Leyenda</p>
+      <div class="text-sm font-semibold space-y-1.5">
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-rose-300 rounded-full"></span>Ocupado</div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-300 rounded-full"></span>Libre / tuyo</div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-slate-300 rounded-full"></span>Bloqueado</div>
+      </div>
+    </div>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="bg-white rounded-[24px] border p-6 shadow-sm">
-      <h3 class="font-extrabold mb-4">Por pista (30 días)</h3>
-      {% for p in por_pista %}<div class="flex justify-between items-center py-3"><div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-red-500"></div><span class="font-semibold text-sm">{{ p.pista__nombre }}</span></div><span class="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold">{{ p.total }}</span></div>{% empty %}<p class="text-sm text-slate-400">Sin datos</p>{% endfor %}
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+      <h3 class="font-extrabold mb-2 text-white">Por pista (30 días)</h3>
+      {% for p in por_pista %}
+      <div class="flex justify-between items-center py-3 border-b border-slate-800 last:border-0">
+        <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-400"></div><span class="font-semibold text-sm text-slate-200">{{ p.pista__nombre }}</span></div>
+        <span class="bg-slate-800 text-slate-200 px-3 py-1 rounded-full text-xs font-bold">{{ p.total }}</span>
+      </div>
+      {% empty %}<p class="text-sm text-slate-500">Sin datos</p>{% endfor %}
     </div>
-    <div class="bg-white rounded-[24px] border p-6 shadow-sm">
-      <h3 class="font-extrabold mb-4">Top usuarios</h3>
-      {% for u in top_usuarios %}<div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0"><span class="text-sm">{{ u.usuario__username }}</span><span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">{{ u.total }}</span></div>{% empty %}<p class="text-sm text-slate-400">Sin datos</p>{% endfor %}
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+      <h3 class="font-extrabold mb-2 text-white">Top usuarios</h3>
+      {% for u in top_usuarios %}
+      <div class="flex justify-between items-center py-3 border-b border-slate-800 last:border-0">
+        <span class="text-sm text-slate-200">{{ u.usuario__username }}</span>
+        <span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">{{ u.total }}</span>
+      </div>
+      {% empty %}<p class="text-sm text-slate-500">Sin datos</p>{% endfor %}
     </div>
   </div>
 </div>

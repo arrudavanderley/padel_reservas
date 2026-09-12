@@ -1,76 +1,246 @@
 {% extends "admin/base_site.html" %}
 {% block extrahead %}
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-.fc .fc-toolbar-title{font-weight:800; font-size:1.4rem;}
-.fc .fc-button{border-radius:999px !important; font-weight:700 !important; font-size:0.85rem !important;}
-.fc .fc-button-primary{background:#0f172a !important; border-color:#0f172a !important;}
-.fc .fc-event{border-radius:14px !important; border:none !important; padding:6px 10px !important; font-weight:700 !important; box-shadow:0 3px 10px rgba(0,0,0,0.12) !important;}
-.fc .fc-col-header-cell{background:#f8fafc !important; font-weight:800 !important; font-size:11px !important; border-color:#f1f5f9 !important;}
-.fc .fc-timegrid-slot{border-color:#f8fafc !important; background:white !important; height:38px !important;}
-.fc .fc-scrollgrid{border-radius:20px !important; overflow:hidden; border:1px solid #e2e8f0 !important;}
+  body{background:#0b1220 !important;}
+  #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;}
+  #header a:link,#header a:visited{color:#e2e8f0;}
+  #branding h1,#branding h1 a:link,#branding h1 a:visited{color:#fff !important;font-weight:700;}
+  #user-tools a{color:#93c5fd !important;}
+  .breadcrumbs{background:#0f172a !important;color:#64748b !important;border:0 !important;}
+  .breadcrumbs a{color:#93c5fd !important;}
+  #content{color:#e2e8f0;}
+  #footer{background:transparent;color:#475569;}
 </style>
 {% endblock %}
 {% block content %}
 <div class="max-w-[1250px] mx-auto">
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-6">
     <div>
-      <h1 class="text-[26px] font-extrabold">Calendario</h1>
-      <p class="text-sm text-slate-500 mt-1"><span class="w-2.5 h-2.5 bg-red-500 rounded-full inline-block mr-1"></span> Reservado <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block ml-3 mr-1"></span> Libre <span class="w-2.5 h-2.5 bg-blue-600 rounded-full inline-block ml-3 mr-1"></span> Evento</p>
+      <h1 class="text-[26px] font-extrabold text-white">Calendario</h1>
+      <p class="text-sm text-slate-400 mt-2 flex flex-wrap gap-3 items-center">
+        <span class="inline-flex items-center gap-1.5 bg-emerald-400/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span> Libre</span>
+        <span class="inline-flex items-center gap-1.5 bg-rose-400/10 text-rose-400 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-rose-400 rounded-full"></span> Ocupada</span>
+        <span class="inline-flex items-center gap-1.5 bg-slate-400/10 text-slate-300 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-slate-400 rounded-full"></span> Bloqueada</span>
+      </p>
     </div>
-    <div class="flex gap-2 bg-white border rounded-full p-1 shadow-sm">
-      <button onclick="calendar.changeView('dayGridMonth')" class="px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-100">Mes</button>
-      <button onclick="calendar.changeView('timeGridWeek')" class="px-4 py-2 rounded-full text-sm font-bold bg-slate-900 text-white">Semana</button>
-      <button onclick="calendar.changeView('timeGridDay')" class="px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-100">Día</button>
+    <div class="flex gap-2">
+      <a href="/admin/reservas_app/reserva/dashboard/" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-5 py-2.5 rounded-full text-sm font-bold transition"><i class="fas fa-chart-line mr-1.5"></i>Dashboard</a>
+      <a href="/admin/reservas_app/reserva/ocupacion/" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-5 py-2.5 rounded-full text-sm font-bold transition"><i class="fas fa-clock mr-1.5"></i>Ocupación</a>
     </div>
   </div>
-  <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm p-4"><div id="calendar-admin"></div></div>
+
+  <div class="flex items-center gap-2 mb-4">
+    <div id="tira-dias" class="flex gap-2 overflow-x-auto pb-1 flex-1"></div>
+    <input type="date" id="ir-a-fecha" class="shrink-0 bg-slate-900 border border-slate-700 rounded-full px-3 py-2.5 text-xs font-bold text-slate-200">
+  </div>
+
+  <div class="bg-slate-900 rounded-[24px] border border-slate-800 shadow-xl p-3 md:p-6">
+    <p id="estado-carga" class="text-sm text-slate-500 py-10 text-center">Cargando disponibilidad…</p>
+    <p id="estado-error" class="hidden text-sm text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-2xl p-4"></p>
+    <div class="overflow-x-auto">
+      <div id="grid-calendario" class="hidden inline-grid gap-2"></div>
+    </div>
+  </div>
 </div>
+
+<!-- Modal: detalle de reserva / bloqueo -->
+<div id="modal-detalle" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" data-cerrar-modal></div>
+  <div class="relative max-w-sm mx-auto mt-24 bg-slate-900 border border-slate-800 rounded-[24px] p-6 shadow-2xl">
+    <h3 class="font-extrabold text-lg mb-1 text-white">Detalle</h3>
+    <div id="detalle-contenido" class="bg-slate-800/60 rounded-2xl p-4 my-4 text-sm space-y-1.5 text-slate-200"></div>
+    <button type="button" id="btn-cancelar-detalle" class="hidden w-full bg-rose-500 hover:bg-rose-600 text-white py-3.5 rounded-full font-bold transition">Cancelar esta reserva</button>
+  </div>
+</div>
+
 <script>
-let calendar;
-document.addEventListener('DOMContentLoaded', function(){
-  const el=document.getElementById('calendar-admin');
-  calendar=new FullCalendar.Calendar(el,{
-    locale:'es', initialView:'timeGridWeek',
-    headerToolbar:{left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay'},
-    slotMinTime:'08:00:00', slotMaxTime:'23:00:00', slotDuration:'01:30:00', allDaySlot:false, height:'auto', nowIndicator:true,
-    events:function(info, success){
-      const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
-      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(d=>success(d));
-    },
-    eventDidMount:function(info){
-      if(info.event.extendedProps.tipo==='bloqueo'){ info.el.style.background='#2563eb'; }
-      else if(info.event.extendedProps.propia){ info.el.style.background='#10b981'; }
-      else { info.el.style.background='#ef4444'; }
-      info.el.style.borderRadius='14px';
+(function () {
+  const DURACION_SLOT_MIN = 90;
+  const HORA_APERTURA = 8 * 60;
+  const HORA_CIERRE = 23 * 60;
+  const DIAS_TIRA = 21;
+
+  function generarSlots() {
+    const slots = [];
+    for (let m = HORA_APERTURA; m + DURACION_SLOT_MIN <= HORA_CIERRE; m += DURACION_SLOT_MIN) {
+      slots.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
     }
+    return slots;
+  }
+  const SLOTS = generarSlots();
+  const DIAS_SEMANA = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+  const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+  function formatearFecha(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function sumarDias(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function sumarMinutos(hora, minutos) { const [h, m] = hora.split(':').map(Number); const t = h * 60 + m + minutos; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+  function textoFechaLarga(f) { const [y, m, d] = f.split('-').map(Number); const fecha = new Date(y, m - 1, d); return NOMBRES_DIA[fecha.getDay()] + ' ' + d + ' de ' + MESES[m - 1]; }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function obtenerCookie(nombre) { const v = `; ${document.cookie}`; const p = v.split(`; ${nombre}=`); if (p.length === 2) return p.pop().split(';').shift(); }
+  const csrftoken = obtenerCookie('csrftoken');
+
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  let fechaSeleccionada = formatearFecha(hoy);
+  let eventosDelDia = [];
+  let PISTAS = [
+    {% for pista in pistas %}
+    { id: {{ pista.id }}, nombre: "{{ pista.nombre|escapejs }}", color: "{{ pista.color }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const tiraDias = document.getElementById('tira-dias');
+  const gridEl = document.getElementById('grid-calendario');
+  const cargandoEl = document.getElementById('estado-carga');
+  const errorEl = document.getElementById('estado-error');
+  const inputIrAFecha = document.getElementById('ir-a-fecha');
+  inputIrAFecha.min = formatearFecha(hoy);
+  inputIrAFecha.value = fechaSeleccionada;
+
+  function renderTiraDias() {
+    let html = '';
+    for (let i = 0; i < DIAS_TIRA; i++) {
+      const d = sumarDias(hoy, i); const f = formatearFecha(d); const sel = f === fechaSeleccionada;
+      html += `<button data-fecha="${f}" class="dia-chip shrink-0 w-14 flex flex-col items-center py-2 rounded-2xl border transition ${sel ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'}">
+        <span class="text-[10px] font-bold uppercase ${sel ? 'text-blue-100' : 'text-slate-500'}">${i === 0 ? 'HOY' : DIAS_SEMANA[d.getDay()]}</span>
+        <span class="text-lg font-extrabold leading-tight">${d.getDate()}</span>
+      </button>`;
+    }
+    tiraDias.innerHTML = html;
+  }
+
+  function derivarPistasDesdeEventos(eventos) {
+    const mapa = {};
+    eventos.forEach(ev => { mapa[ev.extendedProps.pista_id] = true; });
+    return Object.keys(mapa).sort((a, b) => a - b).map(id => ({ id: Number(id), nombre: 'Pista ' + id, color: '#2563eb' }));
+  }
+
+  function calcularEstados(eventos) {
+    const mapa = {};
+    for (const ev of eventos) {
+      const inicio = new Date(ev.start), fin = new Date(ev.end);
+      for (const hora of SLOTS) {
+        const si = new Date(`${fechaSeleccionada}T${hora}:00`);
+        const sf = new Date(si.getTime() + DURACION_SLOT_MIN * 60000);
+        if (inicio < sf && fin > si) {
+          const estado = ev.extendedProps.tipo === 'bloqueo' ? 'bloqueada' : 'reservada';
+          mapa[`${ev.extendedProps.pista_id}-${hora}`] = { estado, evento: ev };
+        }
+      }
+    }
+    return mapa;
+  }
+
+  const ESTILOS = {
+    libre: { clases: 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20', etiqueta: '', icono: '' },
+    reservada: { clases: 'bg-rose-500 hover:bg-rose-600 cursor-pointer text-white', etiqueta: '', icono: '<i class="fas fa-lock mb-0.5"></i>' },
+    bloqueada: { clases: 'bg-slate-600 hover:bg-slate-500 cursor-pointer text-white', etiqueta: 'Bloq.', icono: '<i class="fas fa-ban mb-0.5"></i>' },
+    pasada: { clases: 'bg-slate-800/60 text-slate-600', etiqueta: '', icono: '' },
+  };
+
+  function renderGrid(mapaEstados) {
+    if (!PISTAS.length) {
+      cargandoEl.classList.add('hidden');
+      errorEl.textContent = 'No se ha podido determinar ninguna pista para hoy (ni por contexto de la plantilla ni a partir de eventos). Prueba a mirar otro día, o dime si esto persiste y reviso la vista de administración.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    errorEl.classList.add('hidden');
+    gridEl.style.gridTemplateColumns = `56px repeat(${PISTAS.length}, minmax(90px, 1fr))`;
+    const ahora = new Date();
+    const esHoySeleccionado = fechaSeleccionada === formatearFecha(hoy);
+
+    let html = '<div></div>';
+    for (const pista of PISTAS) {
+      html += `<div class="text-center pb-2 px-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full mr-1" style="background:${pista.color}"></span>
+        <span class="font-bold text-xs md:text-sm text-slate-200">${escapeHtml(pista.nombre)}</span>
+      </div>`;
+    }
+    for (const hora of SLOTS) {
+      html += `<div class="sticky left-0 bg-slate-900 flex items-center justify-end pr-2 text-xs font-bold text-slate-500">${hora}</div>`;
+      for (const pista of PISTAS) {
+        const entrada = mapaEstados[`${pista.id}-${hora}`];
+        let estado = entrada ? entrada.estado : 'libre';
+        const si = new Date(`${fechaSeleccionada}T${hora}:00`);
+        if (estado === 'libre' && esHoySeleccionado && si <= ahora) estado = 'pasada';
+        const s = ESTILOS[estado];
+        const clicable = estado === 'reservada' || estado === 'bloqueada';
+        html += `<button type="button" data-pista="${pista.id}" data-pista-nombre="${escapeHtml(pista.nombre)}" data-hora="${hora}" data-estado="${estado}"
+          class="slot-celda h-20 rounded-2xl flex flex-col items-center justify-center font-bold text-xs md:text-sm transition ${s.clases}" ${clicable ? '' : 'disabled'}>
+          ${s.icono}<span>${hora}</span>${s.etiqueta ? `<span class="text-[9px] font-semibold opacity-90">${s.etiqueta}</span>` : ''}
+        </button>`;
+      }
+    }
+    gridEl.innerHTML = html;
+    gridEl.classList.remove('hidden');
+    cargandoEl.classList.add('hidden');
+  }
+
+  function cargarDia() {
+    cargandoEl.classList.remove('hidden');
+    errorEl.classList.add('hidden');
+    gridEl.classList.add('hidden');
+    fetch(`/eventos/?start=${fechaSeleccionada}&end=${fechaSeleccionada}`)
+      .then(r => r.json())
+      .then(eventos => {
+        eventosDelDia = eventos;
+        if (!PISTAS.length) PISTAS = derivarPistasDesdeEventos(eventos);
+        renderGrid(calcularEstados(eventos));
+      });
+  }
+
+  renderTiraDias();
+  cargarDia();
+
+  tiraDias.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dia-chip'); if (!btn) return;
+    fechaSeleccionada = btn.dataset.fecha; inputIrAFecha.value = fechaSeleccionada;
+    renderTiraDias(); cargarDia();
   });
-  calendar.render();
-});
+  inputIrAFecha.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    fechaSeleccionada = e.target.value; renderTiraDias(); cargarDia();
+  });
+
+  const modalDetalle = document.getElementById('modal-detalle');
+  document.querySelectorAll('[data-cerrar-modal]').forEach(el => el.addEventListener('click', () => modalDetalle.classList.add('hidden')));
+
+  let reservaDetalleId = null;
+
+  gridEl.addEventListener('click', (e) => {
+    const celda = e.target.closest('.slot-celda');
+    if (!celda || celda.disabled) return;
+    const ev = eventosDelDia.find(x => x.extendedProps.pista_id == celda.dataset.pista && x.start.slice(11, 16) === celda.dataset.hora);
+    if (!ev) return;
+    reservaDetalleId = null;
+    const btnCancelar = document.getElementById('btn-cancelar-detalle');
+    if (ev.extendedProps.tipo === 'bloqueo') {
+      document.getElementById('detalle-contenido').innerHTML = `
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Pista</span><span class="font-bold text-white">${celda.dataset.pistaNombre}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Fecha</span><span class="font-bold text-white capitalize">${textoFechaLarga(fechaSeleccionada)}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Hora</span><span class="font-bold text-white">${celda.dataset.hora} - ${sumarMinutos(celda.dataset.hora, DURACION_SLOT_MIN)}</span></p>
+        <p class="pt-2 border-t border-slate-700 mt-2 text-slate-300">${escapeHtml(ev.title)}</p>`;
+      btnCancelar.classList.add('hidden');
+    } else {
+      reservaDetalleId = ev.id.replace('reserva-', '');
+      document.getElementById('detalle-contenido').innerHTML = `
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Reserva</span><span class="font-bold text-white">${escapeHtml(ev.title)}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Fecha</span><span class="font-bold text-white capitalize">${textoFechaLarga(fechaSeleccionada)}</span></p>
+        <p class="flex justify-between"><span class="text-slate-400">Hora</span><span class="font-bold text-white">${celda.dataset.hora} - ${sumarMinutos(celda.dataset.hora, DURACION_SLOT_MIN)}</span></p>`;
+      btnCancelar.classList.remove('hidden');
+    }
+    modalDetalle.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-cancelar-detalle').addEventListener('click', function () {
+    if (!reservaDetalleId || !confirm('¿Cancelar esta reserva como administrador?')) return;
+    fetch(`/reservas/${reservaDetalleId}/cancelar/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken } })
+      .then(r => r.json())
+      .then(d => { if (d.success) { modalDetalle.classList.add('hidden'); cargarDia(); } else alert(d.error || 'No se pudo cancelar.'); });
+  });
+})();
 </script>
 {% endblock %}
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>

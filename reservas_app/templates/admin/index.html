@@ -1,65 +1,64 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}"><script src="https://cdn.tailwindcss.com"></script>{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body{background:#0b1220 !important;}
+  #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;}
+  #header a:link,#header a:visited{color:#e2e8f0;}
+  #branding h1,#branding h1 a:link,#branding h1 a:visited{color:#fff !important;font-weight:700;}
+  #user-tools a{color:#93c5fd !important;}
+  .breadcrumbs{background:#0f172a !important;color:#64748b !important;border:0 !important;}
+  .breadcrumbs a{color:#93c5fd !important;}
+  #content{color:#e2e8f0;}
+  .module{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:16px !important;overflow:hidden;}
+  .module h2,.module caption{background:#1e293b !important;color:#f1f5f9 !important;font-weight:700 !important;}
+  .module table,.module table tr{background:transparent !important;}
+  .module table th,.module table td{border-bottom:1px solid #1f2937 !important;color:#cbd5e1 !important;}
+  .module a:link,.module a:visited{color:#93c5fd !important;}
+  #content-main a.addlink{color:#34d399 !important;}
+  #footer{background:transparent;color:#475569;}
+</style>
+{% endblock %}
 {% block content %}
 <div class="max-w-[1200px] mx-auto mb-8">
-  <div class="bg-white rounded-[24px] border border-slate-200 p-7 shadow-sm">
-    <div class="flex justify-between items-center mb-6">
+  <div class="bg-slate-900 rounded-[24px] border border-slate-800 p-7 shadow-xl">
+    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
       <div>
-        <h2 class="font-extrabold text-[20px] tracking-tight">🎾 Padel Almonte - Panel</h2>
-        <p class="text-[13px] text-slate-500 mt-1">Accesos rápidos • Todo con un clic</p>
+        <h2 class="font-extrabold text-[22px] tracking-tight text-white">Padel Almonte</h2>
+        <p class="text-[13px] text-slate-400 mt-1">Panel de administración · accesos rápidos</p>
       </div>
-      <div class="hidden md:flex items-center gap-2 text-[11px] font-bold">
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-500 rounded-full"></span> Reservado</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> Libre</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-full"></span> Evento</span>
+      <div class="flex items-center gap-4 text-[11px] font-bold text-slate-400">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-rose-400 rounded-full"></span> Ocupado</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span> Libre</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-slate-400 rounded-full"></span> Bloqueado</span>
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <a href="/admin/reservas_app/reserva/dashboard/" class="group bg-slate-900 text-white rounded-[18px] p-5 hover:bg-black transition shadow-sm">
-        <div class="w-10 h-10 bg-white/10 rounded-[12px] flex items-center justify-center mb-3">📊</div>
-        <div class="font-extrabold text-[14px] text-white">Dashboard</div>
-        <div class="text-[12px] text-slate-300 mt-1">Resumen y estadísticas</div>
+      <a href="/admin/reservas_app/reserva/dashboard/" class="group bg-blue-600 hover:bg-blue-500 text-white rounded-[18px] p-5 transition shadow-lg shadow-blue-900/30">
+        <div class="w-10 h-10 bg-white/15 rounded-[12px] flex items-center justify-center mb-3"><i class="fas fa-chart-line"></i></div>
+        <div class="font-extrabold text-[14px]">Dashboard</div>
+        <div class="text-[12px] text-blue-100 mt-1">Resumen y estadísticas</div>
       </a>
-      <a href="/admin/reservas_app/reserva/ocupacion/" class="group bg-white border border-slate-200 rounded-[18px] p-5 hover:bg-slate-50 transition shadow-sm">
-        <div class="w-10 h-10 bg-emerald-50 rounded-[12px] flex items-center justify-center mb-3">🔥</div>
-        <div class="font-extrabold text-[14px] text-slate-900">Ocupación hoy</div>
-        <div class="text-[12px] text-slate-500 mt-1">Tiempo real de pistas</div>
+      <a href="/admin/reservas_app/reserva/ocupacion/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
+        <div class="w-10 h-10 bg-rose-400/10 rounded-[12px] flex items-center justify-center mb-3 text-rose-400"><i class="fas fa-clock"></i></div>
+        <div class="font-extrabold text-[14px] text-white">Ocupación hoy</div>
+        <div class="text-[12px] text-slate-400 mt-1">Tiempo real de pistas</div>
       </a>
-      <a href="/admin/reservas_app/reserva/calendario/" class="group bg-blue-600 text-white rounded-[18px] p-5 hover:bg-blue-700 transition shadow-sm">
-        <div class="w-10 h-10 bg-white/15 rounded-[12px] flex items-center justify-center mb-3">📅</div>
+      <a href="/admin/reservas_app/reserva/calendario/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
+        <div class="w-10 h-10 bg-emerald-400/10 rounded-[12px] flex items-center justify-center mb-3 text-emerald-400"><i class="fas fa-calendar-days"></i></div>
         <div class="font-extrabold text-[14px] text-white">Calendario</div>
-        <div class="text-[12px] text-blue-100 mt-1">Vista admin completa</div>
+        <div class="text-[12px] text-slate-400 mt-1">Vista admin completa</div>
       </a>
-      <a href="/calendario/" class="group bg-white border border-slate-200 rounded-[18px] p-5 hover:bg-slate-50 transition shadow-sm">
-        <div class="w-10 h-10 bg-slate-100 rounded-[12px] flex items-center justify-center mb-3">👤</div>
-        <div class="font-extrabold text-[14px] text-slate-900">Vista cliente</div>
-        <div class="text-[12px] text-slate-500 mt-1">Como lo ve el usuario</div>
+      <a href="/calendario/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
+        <div class="w-10 h-10 bg-slate-400/10 rounded-[12px] flex items-center justify-center mb-3 text-slate-300"><i class="fas fa-user"></i></div>
+        <div class="font-extrabold text-[14px] text-white">Vista cliente</div>
+        <div class="text-[12px] text-slate-400 mt-1">Como lo ve el usuario</div>
       </a>
     </div>
   </div>
 </div>
 <div id="content-main">{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}</div>
 {% endblock %}
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
