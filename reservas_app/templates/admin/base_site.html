@@ -14,8 +14,10 @@
 {% block breadcrumbs %}
 <div class="mi-nav">
   <a href="{% url 'admin:index' %}"><i class="fas fa-house mr-1"></i>Inicio</a>
-  <a href="{% url 'admin:app_list' app_label='reservas_app' %}"><i class="fas fa-table-tennis-paddle-ball mr-1"></i>Reservas de pádel</a>
-  <a href="{% url 'admin:app_list' app_label='auth' %}"><i class="fas fa-users mr-1"></i>Autenticación y autorización</a>
+  <a href="{% url 'admin:index' %}#dashboard"><i class="fas fa-chart-line mr-1"></i>Dashboard</a>
+  <a href="{% url 'admin:index' %}#calendario"><i class="fas fa-calendar-days mr-1"></i>Calendario</a>
+  <a href="{% url 'admin:index' %}#reservas-padel"><i class="fas fa-table-tennis-paddle-ball mr-1"></i>Reservas de pádel</a>
+  <a href="{% url 'admin:index' %}#autenticacion"><i class="fas fa-users mr-1"></i>Autenticación y autorización</a>
 </div>
 {% endblock %}
 
@@ -39,6 +41,8 @@
   .mi-nav{background:#0f172a;border-bottom:1px solid #1e293b;padding:10px 24px;display:flex;gap:8px;flex-wrap:wrap;}
   .mi-nav a{background:#1e293b;color:#cbd5e1 !important;padding:7px 16px;border-radius:999px;font-size:12.5px;font-weight:700;text-decoration:none;transition:.15s;}
   .mi-nav a:hover{background:#334155;color:#fff !important;}
+
+  [id]{scroll-margin-top:24px;}
 
   #content-main,#content{color:#e2e8f0;}
   .module{background:#111827 !important;border:1px solid #1f2937 !important;border-radius:16px !important;overflow:hidden;margin-bottom:20px;}
