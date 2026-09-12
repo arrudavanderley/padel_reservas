@@ -1,161 +1,357 @@
 {% extends 'reservas/base.html' %}
 {% block title %}Calendario - Padel Almonte{% endblock %}
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js"></script>
-
 <div class="max-w-7xl mx-auto px-6 py-10">
   <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
     <div>
       <h1 class="text-[32px] font-extrabold tracking-tight">Calendario de pistas</h1>
       <p class="text-sm text-slate-500 mt-2 flex flex-wrap gap-3 items-center">
-        <span class="inline-flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Reservado</span>
         <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Libre</span>
-        <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-blue-600 rounded-full"></span> Evento</span>
+        <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-blue-600 rounded-full"></span> Tuya</span>
+        <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-rose-400 rounded-full"></span> Ocupada</span>
+        <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-slate-400 rounded-full"></span> Bloqueada</span>
       </p>
-    </div>
-    <div class="flex gap-2">
-      <select id="filtro-pista" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold">
-        <option value="">Todas las pistas</option>
-        {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
-      </select>
     </div>
   </div>
 
-  <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm p-4 md:p-6">
-    <div id="calendar"></div>
+  <!-- Selector de día -->
+  <div class="flex items-center gap-2 mb-4">
+    <div id="tira-dias" class="flex gap-2 overflow-x-auto pb-1 flex-1"></div>
+    <input type="date" id="ir-a-fecha" class="shrink-0 border border-slate-200 rounded-full px-3 py-2.5 text-xs font-bold text-slate-600">
+  </div>
+
+  <!-- Rejilla de disponibilidad -->
+  <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm p-3 md:p-6">
+    <p id="estado-carga" class="text-sm text-slate-400 py-10 text-center">Cargando disponibilidad…</p>
+    <div class="overflow-x-auto">
+      <div id="grid-calendario" class="hidden inline-grid gap-2" style="grid-template-columns: 52px repeat({{ pistas|length }}, minmax(80px, 1fr));"></div>
+    </div>
   </div>
 
   {% if user.is_authenticated %}
   <div class="mt-8 bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm">
     <h3 class="font-extrabold mb-3">Tus reservas <span id="contador" class="ml-2 text-xs bg-slate-900 text-white px-3 py-1 rounded-full">0/5</span></h3>
-    <div id="mis-reservas" class="grid md:grid-cols-3 gap-3 text-sm">Cargando...</div>
+    <div id="mis-reservas" class="grid md:grid-cols-2 gap-3 text-sm">Cargando...</div>
   </div>
   {% endif %}
 </div>
 
-<div id="modal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('modal').classList.add('hidden')"></div>
+<form id="form-csrf" class="hidden">{% csrf_token %}</form>
+
+<!-- Modal: confirmar reserva -->
+<div id="modal-reserva" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-cerrar-modal></div>
   <div class="relative max-w-sm mx-auto mt-20 bg-white rounded-[24px] p-6 shadow-xl border">
-    <h3 class="font-extrabold text-lg mb-1">Reservar pista</h3>
-    <p class="text-xs text-slate-500 mb-4">Selecciona tu pista y confirma</p>
-    <form id="form-reserva">
-      {% csrf_token %}
-      <select name="pista" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm">
-        {% for pista in pistas %}<option value="{{ pista.id }}">{{ pista.nombre }}</option>{% endfor %}
+    <h3 class="font-extrabold text-lg mb-1">Confirmar reserva</h3>
+    <p class="text-xs text-slate-500 mb-4">Revisa los datos y confirma</p>
+    <div class="bg-slate-50 rounded-2xl p-4 mb-4 text-sm space-y-1.5">
+      <p class="flex justify-between"><span class="text-slate-500">Pista</span><span id="resumen-pista" class="font-bold"></span></p>
+      <p class="flex justify-between"><span class="text-slate-500">Fecha</span><span id="resumen-fecha" class="font-bold capitalize"></span></p>
+      <p class="flex justify-between"><span class="text-slate-500">Hora</span><span id="resumen-hora" class="font-bold"></span></p>
+    </div>
+    <label class="flex items-center gap-2 text-sm font-semibold mb-2 cursor-pointer">
+      <input type="checkbox" id="check-recurrente" class="rounded border-slate-300"> Repetir esta reserva
+    </label>
+    <div id="campos-recurrencia" class="hidden grid grid-cols-2 gap-2 mb-3">
+      <select id="frecuencia" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm">
+        <option value="semanal">Cada semana</option>
+        <option value="diaria">Cada día</option>
+        <option value="mensual">Cada mes</option>
       </select>
-      <input type="date" name="fecha" id="fecha" class="w-full border border-slate-200 rounded-xl px-4 py-3 mb-3 text-sm" required>
-      <div class="grid grid-cols-2 gap-3 mb-3">
-        <input type="time" name="hora_inicio" id="inicio" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
-        <input type="time" name="hora_fin" id="fin" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm" required>
-      </div>
-      <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm mb-3"></div>
-      <button class="w-full bg-slate-900 text-white py-3.5 rounded-full font-bold hover:bg-black">Confirmar reserva</button>
-    </form>
+      <input type="date" id="fecha_fin_recurrencia" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm">
+    </div>
+    <div id="error-reserva" class="hidden bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-sm mb-3"></div>
+    <button type="button" id="btn-confirmar-reserva" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-full font-bold transition disabled:opacity-60">Confirmar reserva</button>
   </div>
 </div>
 
-<style>
-.fc .fc-toolbar-title{font-weight:800; font-size:1.4rem; letter-spacing:-0.02em;}
-.fc .fc-button{border-radius:999px !important; font-weight:700 !important; font-size:0.85rem !important; padding:0.55rem 1rem !important;}
-.fc .fc-button-primary{background:#0f172a !important; border-color:#0f172a !important;}
-.fc .fc-event{border-radius:14px !important; border:none !important; padding:6px 10px !important; font-weight:700 !important; font-size:0.8rem !important; box-shadow:0 3px 10px rgba(0,0,0,0.12) !important;}
-.fc .fc-col-header-cell{background:#f8fafc !important; font-weight:800 !important; font-size:11px !important; text-transform:uppercase !important; letter-spacing:0.05em !important; border-color:#f1f5f9 !important;}
-.fc .fc-timegrid-slot{border-color:#f8fafc !important; background:white !important; height:38px !important;}
-.fc .fc-timegrid-slot-minor{border-color:#f8fafc !important;}
-.fc .fc-daygrid-day, .fc .fc-timegrid-axis{border-color:#f1f5f9 !important;}
-.fc .fc-scrollgrid{border-radius:20px !important; overflow:hidden; border:1px solid #e2e8f0 !important;}
-.fc .fc-timegrid-col{border-color:#f1f5f9 !important;}
-</style>
+<!-- Modal: detalle / cancelar reserva propia -->
+<div id="modal-detalle" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-cerrar-modal></div>
+  <div class="relative max-w-sm mx-auto mt-20 bg-white rounded-[24px] p-6 shadow-xl border">
+    <h3 class="font-extrabold text-lg mb-1">Tu reserva</h3>
+    <div id="detalle-contenido" class="bg-slate-50 rounded-2xl p-4 my-4 text-sm space-y-1.5"></div>
+    <button type="button" id="btn-cancelar-detalle" class="w-full bg-rose-500 hover:bg-rose-600 text-white py-3.5 rounded-full font-bold transition">Cancelar reserva</button>
+  </div>
+</div>
 
 <script>
-let calendar; let filtro="";
-document.addEventListener('DOMContentLoaded', function(){
-  const el=document.getElementById('calendar');
-  calendar=new FullCalendar.Calendar(el,{
-    locale:'es',
-    initialView:'timeGridWeek',
-    headerToolbar:{left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay'},
-    slotMinTime:'08:00:00',
-    slotMaxTime:'23:00:00',
-    slotDuration:'01:30:00',
-    slotLabelInterval:'01:30:00',
-    slotLabelFormat:{hour:'2-digit', minute:'2-digit', hour12:false},
-    allDaySlot:false,
-    nowIndicator:true,
-    height:'auto',
-    events:function(info, success){
-      const p=new URLSearchParams({start:info.startStr.slice(0,10), end:info.endStr.slice(0,10)});
-      if(filtro) p.append('pista', filtro);
-      fetch('/eventos/?'+p.toString()).then(r=>r.json()).then(d=>success(d));
-    },
-    dateClick:function(info){
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('fecha').value=info.dateStr.slice(0,10);
-      document.getElementById('inicio').value=info.dateStr.slice(11,16);
-      const fin=new Date(info.date); fin.setMinutes(fin.getMinutes()+90);
-      document.getElementById('fin').value=String(fin.getHours()).padStart(2,'0')+':'+String(fin.getMinutes()).padStart(2,'0');
-    },
-    eventClick:function(info){
-      if(info.event.extendedProps.tipo==='bloqueo'){ alert('🔵 Evento admin: '+info.event.title); return; }
-      if(info.event.extendedProps.propia){
-        if(confirm('¿Cancelar tu reserva '+info.event.title+'?')){
-          fetch(`/reservas/${info.event.id.split('-')[1]}/cancelar/`, {method:'POST', headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
-          .then(r=>r.json()).then(d=>{ if(d.success) location.reload(); else alert(d.error); });
-        }
-      } else { alert('🔴 Reservado: '+info.event.title); }
-    },
-    eventDidMount:function(info){
-      if(info.event.extendedProps.tipo==='bloqueo'){ info.el.style.background='#2563eb'; }
-      else if(info.event.extendedProps.propia){ info.el.style.background='#10b981'; }
-      else { info.el.style.background='#ef4444'; }
-      info.el.style.borderRadius='14px';
+(function () {
+  const PISTAS = [
+    {% for pista in pistas %}
+    { id: {{ pista.id }}, nombre: "{{ pista.nombre|escapejs }}", color: "{{ pista.color }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const DURACION_SLOT_MIN = 90;
+  const HORA_APERTURA = 8 * 60;
+  const HORA_CIERRE = 23 * 60;
+  const DIAS_TIRA = 21;
+
+  function generarSlots() {
+    const slots = [];
+    for (let m = HORA_APERTURA; m + DURACION_SLOT_MIN <= HORA_CIERRE; m += DURACION_SLOT_MIN) {
+      slots.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
     }
+    return slots;
+  }
+  const SLOTS = generarSlots();
+
+  const DIAS_SEMANA = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+  const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+  function formatearFecha(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function sumarDias(d, n) {
+    const nueva = new Date(d);
+    nueva.setDate(nueva.getDate() + n);
+    return nueva;
+  }
+  function sumarMinutos(hora, minutos) {
+    const [h, m] = hora.split(':').map(Number);
+    const total = h * 60 + m + minutos;
+    return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+  }
+  function textoFechaLarga(f) {
+    const [y, m, d] = f.split('-').map(Number);
+    const fecha = new Date(y, m - 1, d);
+    return NOMBRES_DIA[fecha.getDay()] + ' ' + d + ' de ' + MESES[m - 1];
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function obtenerCookie(nombre) {
+    const valor = `; ${document.cookie}`;
+    const partes = valor.split(`; ${nombre}=`);
+    if (partes.length === 2) return partes.pop().split(';').shift();
+  }
+  const csrftoken = obtenerCookie('csrftoken');
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  let fechaSeleccionada = formatearFecha(hoy);
+  let eventosDelDia = [];
+
+  const tiraDias = document.getElementById('tira-dias');
+  const gridEl = document.getElementById('grid-calendario');
+  const cargandoEl = document.getElementById('estado-carga');
+  const inputIrAFecha = document.getElementById('ir-a-fecha');
+  inputIrAFecha.min = formatearFecha(hoy);
+  inputIrAFecha.value = fechaSeleccionada;
+
+  function renderTiraDias() {
+    let html = '';
+    for (let i = 0; i < DIAS_TIRA; i++) {
+      const d = sumarDias(hoy, i);
+      const f = formatearFecha(d);
+      const sel = f === fechaSeleccionada;
+      html += `<button data-fecha="${f}" class="dia-chip shrink-0 w-14 flex flex-col items-center py-2 rounded-2xl border transition ${sel ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'}">
+        <span class="text-[10px] font-bold uppercase ${sel ? 'text-blue-100' : 'text-slate-400'}">${i === 0 ? 'HOY' : DIAS_SEMANA[d.getDay()]}</span>
+        <span class="text-lg font-extrabold leading-tight">${d.getDate()}</span>
+      </button>`;
+    }
+    tiraDias.innerHTML = html;
+  }
+
+  function calcularEstados(eventos) {
+    const mapa = {};
+    for (const ev of eventos) {
+      const inicio = new Date(ev.start);
+      const fin = new Date(ev.end);
+      for (const hora of SLOTS) {
+        const slotInicio = new Date(`${fechaSeleccionada}T${hora}:00`);
+        const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MIN * 60000);
+        if (inicio < slotFin && fin > slotInicio) {
+          let estado = 'reservada';
+          if (ev.extendedProps.tipo === 'bloqueo') estado = 'bloqueada';
+          else if (ev.extendedProps.propia) estado = 'tuya';
+          mapa[`${ev.extendedProps.pista_id}-${hora}`] = { estado, evento: ev };
+        }
+      }
+    }
+    return mapa;
+  }
+
+  const ESTILOS = {
+    libre: { clases: 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer text-white', etiqueta: '', icono: '' },
+    tuya: { clases: 'bg-blue-600 hover:bg-blue-700 cursor-pointer text-white', etiqueta: 'Tuya', icono: '<i class="fas fa-check mb-0.5"></i>' },
+    reservada: { clases: 'bg-rose-400 text-white cursor-not-allowed', etiqueta: 'Ocupada', icono: '<i class="fas fa-lock mb-0.5"></i>' },
+    bloqueada: { clases: 'bg-slate-400 text-white cursor-not-allowed', etiqueta: 'Bloqueada', icono: '<i class="fas fa-ban mb-0.5"></i>' },
+    pasada: { clases: 'bg-slate-50 text-slate-300 cursor-not-allowed', etiqueta: '', icono: '' },
+  };
+
+  function renderGrid(mapaEstados) {
+    const ahora = new Date();
+    const esHoySeleccionado = fechaSeleccionada === formatearFecha(hoy);
+
+    let html = '<div></div>';
+    for (const pista of PISTAS) {
+      html += `<div class="text-center pb-2 px-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full mr-1" style="background:${pista.color}"></span>
+        <span class="font-bold text-xs md:text-sm">${escapeHtml(pista.nombre)}</span>
+      </div>`;
+    }
+
+    for (const hora of SLOTS) {
+      html += `<div class="sticky left-0 bg-white flex items-center justify-end pr-2 text-xs font-bold text-slate-400">${hora}</div>`;
+      for (const pista of PISTAS) {
+        const entrada = mapaEstados[`${pista.id}-${hora}`];
+        let estado = entrada ? entrada.estado : 'libre';
+        const slotInicio = new Date(`${fechaSeleccionada}T${hora}:00`);
+        if (estado === 'libre' && esHoySeleccionado && slotInicio <= ahora) estado = 'pasada';
+        const s = ESTILOS[estado];
+        const clicable = estado === 'libre' || estado === 'tuya';
+        html += `<button type="button" data-pista="${pista.id}" data-pista-nombre="${escapeHtml(pista.nombre)}" data-hora="${hora}" data-estado="${estado}"
+          class="slot-celda h-20 rounded-2xl flex flex-col items-center justify-center font-bold text-xs md:text-sm transition ${s.clases}" ${clicable ? '' : 'disabled'}>
+          ${s.icono}<span>${hora}</span>${s.etiqueta ? `<span class="text-[9px] font-semibold opacity-90">${s.etiqueta}</span>` : ''}
+        </button>`;
+      }
+    }
+    gridEl.innerHTML = html;
+    gridEl.classList.remove('hidden');
+    cargandoEl.classList.add('hidden');
+  }
+
+  function cargarDia() {
+    cargandoEl.classList.remove('hidden');
+    gridEl.classList.add('hidden');
+    fetch(`/eventos/?start=${fechaSeleccionada}&end=${fechaSeleccionada}`)
+      .then(r => r.json())
+      .then(eventos => { eventosDelDia = eventos; renderGrid(calcularEstados(eventos)); });
+  }
+
+  renderTiraDias();
+  cargarDia();
+
+  tiraDias.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dia-chip');
+    if (!btn) return;
+    fechaSeleccionada = btn.dataset.fecha;
+    inputIrAFecha.value = fechaSeleccionada;
+    renderTiraDias();
+    cargarDia();
   });
-  calendar.render();
-  document.getElementById('filtro-pista').addEventListener('change', e=>{ filtro=e.target.value; calendar.refetchEvents(); });
-  
-  document.getElementById('form-reserva').addEventListener('submit', e=>{
-    e.preventDefault();
-    const fd=new FormData(e.target);
-    fetch('/reservas/crear/', {method:'POST', body:fd, headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}})
-    .then(async r=>{ const d=await r.json(); if(!r.ok) throw d; return d; })
-    .then(()=>{ alert('¡Reservada!'); location.reload(); })
-    .catch(err=>{ const div=document.getElementById('error'); div.classList.remove('hidden'); div.innerText=err.error||'Error'; });
+  inputIrAFecha.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    fechaSeleccionada = e.target.value;
+    renderTiraDias();
+    cargarDia();
   });
 
-  const cont=document.getElementById('mis-reservas');
-  if(cont){
-    fetch('/eventos/?start='+new Date().toISOString().slice(0,10)+'&end=2099-12-31').then(r=>r.json()).then(ev=>{
-      const mias=ev.filter(x=>x.extendedProps.propia);
-      const c=document.getElementById('contador'); if(c) c.innerText=mias.length+'/5';
-      if(!mias.length){ cont.innerHTML='<p class="text-sm text-slate-400">Sin reservas futuras</p>'; return; }
-      cont.innerHTML=mias.slice(0,6).map(e=>`<div class="bg-slate-50 rounded-[16px] p-4 border"><p class="font-bold text-sm">🟢 ${e.title}</p><p class="text-xs text-slate-500">${new Date(e.start).toLocaleString('es-ES')}</p></div>`).join('');
+  const modalReserva = document.getElementById('modal-reserva');
+  const modalDetalle = document.getElementById('modal-detalle');
+  document.querySelectorAll('[data-cerrar-modal]').forEach(el => el.addEventListener('click', () => {
+    modalReserva.classList.add('hidden');
+    modalDetalle.classList.add('hidden');
+  }));
+
+  let pistaSel = null, horaSel = null;
+
+  gridEl.addEventListener('click', (e) => {
+    const celda = e.target.closest('.slot-celda');
+    if (!celda || celda.disabled) return;
+    if (celda.dataset.estado === 'libre') abrirModalReserva(celda);
+    else if (celda.dataset.estado === 'tuya') abrirModalDetalle(celda);
+  });
+
+  function abrirModalReserva(celda) {
+    pistaSel = celda.dataset.pista;
+    horaSel = celda.dataset.hora;
+    document.getElementById('resumen-pista').textContent = celda.dataset.pistaNombre;
+    document.getElementById('resumen-fecha').textContent = textoFechaLarga(fechaSeleccionada);
+    document.getElementById('resumen-hora').textContent = `${horaSel} - ${sumarMinutos(horaSel, DURACION_SLOT_MIN)}`;
+    document.getElementById('error-reserva').classList.add('hidden');
+    document.getElementById('check-recurrente').checked = false;
+    document.getElementById('campos-recurrencia').classList.add('hidden');
+    document.getElementById('fecha_fin_recurrencia').min = fechaSeleccionada;
+    modalReserva.classList.remove('hidden');
+  }
+
+  document.getElementById('check-recurrente').addEventListener('change', function () {
+    document.getElementById('campos-recurrencia').classList.toggle('hidden', !this.checked);
+  });
+
+  document.getElementById('btn-confirmar-reserva').addEventListener('click', function () {
+    const btn = this;
+    const datos = new FormData();
+    datos.append('pista', pistaSel);
+    datos.append('fecha', fechaSeleccionada);
+    datos.append('hora_inicio', horaSel);
+    datos.append('hora_fin', sumarMinutos(horaSel, DURACION_SLOT_MIN));
+    if (document.getElementById('check-recurrente').checked) {
+      datos.append('recurrente', 'on');
+      datos.append('frecuencia', document.getElementById('frecuencia').value);
+      datos.append('fecha_fin_recurrencia', document.getElementById('fecha_fin_recurrencia').value);
+    }
+    btn.disabled = true;
+    fetch('/reservas/crear/', { method: 'POST', body: datos, headers: { 'X-CSRFToken': csrftoken } })
+      .then(async r => { const d = await r.json(); if (!r.ok || !d.success) throw d; return d; })
+      .then(() => {
+        modalReserva.classList.add('hidden');
+        toast('¡Reserva confirmada!');
+        cargarDia();
+        cargarMisReservas();
+      })
+      .catch(err => {
+        const div = document.getElementById('error-reserva');
+        div.textContent = (err.errores ? Object.values(err.errores).flat().join(' ') : (err.error || 'No se pudo completar la reserva.'));
+        div.classList.remove('hidden');
+      })
+      .finally(() => { btn.disabled = false; });
+  });
+
+  let reservaDetalleId = null;
+  function abrirModalDetalle(celda) {
+    const ev = eventosDelDia.find(e => e.extendedProps.propia && e.extendedProps.pista_id == celda.dataset.pista && e.start.slice(11, 16) === celda.dataset.hora);
+    if (!ev) return;
+    reservaDetalleId = ev.id.replace('reserva-', '');
+    document.getElementById('detalle-contenido').innerHTML = `
+      <p class="flex justify-between mb-1"><span class="text-slate-500">Pista</span><span class="font-bold">${celda.dataset.pistaNombre}</span></p>
+      <p class="flex justify-between mb-1"><span class="text-slate-500">Fecha</span><span class="font-bold capitalize">${textoFechaLarga(fechaSeleccionada)}</span></p>
+      <p class="flex justify-between"><span class="text-slate-500">Hora</span><span class="font-bold">${celda.dataset.hora} - ${sumarMinutos(celda.dataset.hora, DURACION_SLOT_MIN)}</span></p>`;
+    modalDetalle.classList.remove('hidden');
+  }
+
+  document.getElementById('btn-cancelar-detalle').addEventListener('click', function () {
+    if (!reservaDetalleId || !confirm('¿Seguro que quieres cancelar esta reserva?')) return;
+    fetch(`/reservas/${reservaDetalleId}/cancelar/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken } })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) { modalDetalle.classList.add('hidden'); toast('Reserva cancelada'); cargarDia(); cargarMisReservas(); }
+        else alert(d.error || 'No se pudo cancelar la reserva.');
+      });
+  });
+
+  function cargarMisReservas() {
+    const cont = document.getElementById('mis-reservas');
+    if (!cont) return;
+    fetch('/eventos/?start=' + formatearFecha(hoy) + '&end=2099-12-31').then(r => r.json()).then(ev => {
+      const mias = ev.filter(x => x.extendedProps.propia).sort((a, b) => new Date(a.start) - new Date(b.start));
+      const c = document.getElementById('contador');
+      if (c) c.textContent = mias.length + '/5';
+      if (!mias.length) { cont.innerHTML = '<p class="text-sm text-slate-400">Sin reservas futuras</p>'; return; }
+      cont.innerHTML = mias.slice(0, 6).map(e => {
+        const id = e.id.replace('reserva-', '');
+        const fechaHora = new Date(e.start).toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return `<div class="bg-slate-50 rounded-[16px] p-4 border flex justify-between items-center gap-3">
+          <div><p class="font-bold text-sm">${escapeHtml(e.title)}</p><p class="text-xs text-slate-500 capitalize">${fechaHora}</p></div>
+          <button data-cancelar-id="${id}" class="btn-cancelar-mini shrink-0 w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 text-xs"><i class="fas fa-xmark"></i></button>
+        </div>`;
+      }).join('');
     });
   }
-});
+  document.getElementById('mis-reservas')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-cancelar-mini');
+    if (!btn) return;
+    if (!confirm('¿Seguro que quieres cancelar esta reserva?')) return;
+    fetch(`/reservas/${btn.dataset.cancelarId}/cancelar/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken } })
+      .then(r => r.json())
+      .then(d => { if (d.success) { toast('Reserva cancelada'); cargarDia(); cargarMisReservas(); } });
+  });
+
+  cargarMisReservas();
+})();
 </script>
 {% endblock %}
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
