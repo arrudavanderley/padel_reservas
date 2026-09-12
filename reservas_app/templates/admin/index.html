@@ -90,7 +90,10 @@
       {% for app in app_list %}{% if app.app_label == 'reservas_app' %}{% for model in app.models %}
       <div class="flex justify-between items-center p-5 hover:bg-slate-800/50 transition">
         <a href="{{ model.admin_url }}" class="font-bold text-white hover:text-blue-400">{{ model.name }}</a>
-        {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+        <div class="flex items-center gap-2">
+          <a href="{{ model.admin_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-blue-400 px-4 py-2 rounded-full"><i class="fas fa-pen mr-1"></i>Modificar</a>
+          {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+        </div>
       </div>
       {% endfor %}{% endif %}{% endfor %}
     </div>
@@ -103,7 +106,10 @@
       {% for app in app_list %}{% if app.app_label == 'auth' %}{% for model in app.models %}
       <div class="flex justify-between items-center p-5 hover:bg-slate-800/50 transition">
         <a href="{{ model.admin_url }}" class="font-bold text-white hover:text-blue-400">{{ model.name }}</a>
-        {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+        <div class="flex items-center gap-2">
+          <a href="{{ model.admin_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-blue-400 px-4 py-2 rounded-full"><i class="fas fa-pen mr-1"></i>Modificar</a>
+          {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+        </div>
       </div>
       {% endfor %}{% endif %}{% endfor %}
     </div>
