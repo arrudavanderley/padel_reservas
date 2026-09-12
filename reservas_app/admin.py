@@ -28,22 +28,3 @@ class ReservaAdmin(admin.ModelAdmin):
         hoy = date.today()
         total_hoy = Reserva.objects.filter(fecha=hoy, estado='confirmada').count()
         total_mes = Reserva.objects.filter(fecha__gte=hoy.replace(day=1), estado='confirmada').count()
-        por_pista = Reserva.objects.filter(fecha__gte=hoy-timedelta(days=30), estado='confirmada').values('pista__nombre').annotate(total=Count('id')).order_by('-total')
-        top = Reserva.objects.filter(estado='confirmada').values('usuario__username').annotate(total=Count('id')).order_by('-total')[:5]
-        context = dict(self.admin_site.each_context(request), hoy=hoy, total_hoy=total_hoy, total_mes=total_mes, por_pista=por_pista, top_usuarios=top)
-        return TemplateResponse(request, "admin/dashboard.html", context)
-
-    def ocupacion_view(self, request):
-        hoy = date.today()
-        reservas = Reserva.objects.filter(fecha=hoy, estado='confirmada').select_related('pista','usuario').order_by('hora_inicio')
-        context = dict(self.admin_site.each_context(request), hoy=hoy, reservas=reservas, total=reservas.count())
-        return TemplateResponse(request, "admin/ocupacion.html", context)
-
-    def calendario_view(self, request):
-        pistas = Pista.objects.all()
-        context = dict(self.admin_site.each_context(request), pistas=pistas)
-        return TemplateResponse(request, "admin/calendario.html", context)
-
-@admin.register(Bloqueo)
-class BloqueoAdmin(admin.ModelAdmin):
-    list_display = ('id','pista','fecha_inicio','fecha_fin','motivo')
