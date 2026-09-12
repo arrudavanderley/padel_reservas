@@ -25,7 +25,25 @@
 {{ block.super }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-  :root{color-scheme:dark;}
+  :root{
+    color-scheme:dark;
+    --primary:#2563eb; --primary-fg:#fff;
+    --body-fg:#e2e8f0; --body-bg:#0b1220;
+    --body-quiet-color:#94a3b8; --body-loud-color:#f1f5f9;
+    --header-color:#fff; --header-branding-color:#fff;
+    --header-bg:#0f172a; --header-link-color:#e2e8f0;
+    --breadcrumbs-fg:#94a3b8; --breadcrumbs-link-fg:#93c5fd; --breadcrumbs-bg:#0f172a;
+    --link-fg:#93c5fd; --link-hover-color:#bfdbfe; --link-selected-fg:#93c5fd;
+    --hairline-color:#1f2937; --border-color:#1f2937;
+    --error-fg:#f87171;
+    --message-success-bg:#064e3b; --message-warning-bg:#78350f; --message-error-bg:#7f1d1d;
+    --darkened-bg:#111827; --selected-bg:#1e293b; --selected-row:#1e293b;
+    --button-bg:#2563eb; --button-fg:#fff; --button-hover-bg:#1d4ed8;
+    --default-button-bg:#2563eb; --default-button-hover-bg:#1d4ed8;
+    --close-button-bg:#334155; --close-button-hover-bg:#475569;
+    --delete-button-bg:#dc2626; --delete-button-hover-bg:#b91c1c;
+    --object-tools-bg:#334155; --object-tools-hover-bg:#475569;
+  }
   body{background:#0b1220 !important;color:#e2e8f0 !important;}
   #header{background:#0f172a !important;color:#e2e8f0 !important;border-bottom:1px solid #1e293b;padding:14px 24px;}
   #header a:link,#header a:visited{color:#e2e8f0;}
@@ -72,8 +90,9 @@
   #changelist-filter h2,#changelist-filter h3{color:#f1f5f9 !important;background:transparent !important;}
   #changelist-filter a{color:#93c5fd !important;}
   #changelist-filter li.selected a{color:#fff !important;font-weight:700;}
-  .paginator{color:#94a3b8 !important;}
+  .paginator{color:#94a3b8 !important;background:transparent !important;border-top:1px solid #1f2937 !important;}
   .paginator a{color:#93c5fd !important;}
+  #changelist,.results,.results table{background:#111827 !important;}
   .actions{background:#111827 !important;border-color:#1f2937 !important;color:#cbd5e1 !important;}
 
   .messagelist li{border-radius:12px !important;}
