@@ -1,46 +1,314 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 {% block extrastyle %}{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
 <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
+
 {% block content %}
-<div class="max-w-[1200px] mx-auto mb-8">
-  <div class="bg-slate-900 rounded-[24px] border border-slate-800 p-7 shadow-xl">
-    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-      <div>
-        <h2 class="font-extrabold text-[22px] tracking-tight text-white">Padel Almonte</h2>
-        <p class="text-[13px] text-slate-400 mt-1">Panel de administración · accesos rápidos</p>
-      </div>
-      <div class="flex items-center gap-4 text-[11px] font-bold text-slate-400">
-        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-rose-400 rounded-full"></span> Ocupado</span>
-        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span> Libre</span>
-        <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-slate-400 rounded-full"></span> Bloqueado</span>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <a href="/admin/reservas_app/reserva/dashboard/" class="group bg-blue-600 hover:bg-blue-500 text-white rounded-[18px] p-5 transition shadow-lg shadow-blue-900/30">
-        <div class="w-10 h-10 bg-white/15 rounded-[12px] flex items-center justify-center mb-3"><i class="fas fa-chart-line"></i></div>
-        <div class="font-extrabold text-[14px]">Dashboard</div>
-        <div class="text-[12px] text-blue-100 mt-1">Resumen y estadísticas</div>
-      </a>
-      <a href="/admin/reservas_app/reserva/ocupacion/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
-        <div class="w-10 h-10 bg-rose-400/10 rounded-[12px] flex items-center justify-center mb-3 text-rose-400"><i class="fas fa-clock"></i></div>
-        <div class="font-extrabold text-[14px] text-white">Ocupación hoy</div>
-        <div class="text-[12px] text-slate-400 mt-1">Tiempo real de pistas</div>
-      </a>
-      <a href="/admin/reservas_app/reserva/calendario/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
-        <div class="w-10 h-10 bg-emerald-400/10 rounded-[12px] flex items-center justify-center mb-3 text-emerald-400"><i class="fas fa-calendar-days"></i></div>
-        <div class="font-extrabold text-[14px] text-white">Calendario</div>
-        <div class="text-[12px] text-slate-400 mt-1">Vista admin completa</div>
-      </a>
-      <a href="/calendario/" class="group bg-slate-800 hover:bg-slate-700 rounded-[18px] p-5 transition border border-slate-700">
-        <div class="w-10 h-10 bg-slate-400/10 rounded-[12px] flex items-center justify-center mb-3 text-slate-300"><i class="fas fa-user"></i></div>
-        <div class="font-extrabold text-[14px] text-white">Vista cliente</div>
-        <div class="text-[12px] text-slate-400 mt-1">Como lo ve el usuario</div>
-      </a>
-    </div>
+<div class="max-w-[1250px] mx-auto space-y-10 pb-16">
+
+  <div>
+    <h1 class="text-[28px] font-extrabold text-white">Padel Almonte</h1>
+    <p class="text-sm text-slate-400 mt-1">Panel de administración · todo en una sola página</p>
   </div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="dashboard">
+    <h2 class="text-xl font-extrabold text-white mb-4 flex items-center gap-2"><i class="fas fa-chart-line text-blue-400"></i> Dashboard</h2>
+    <p class="text-sm text-slate-400 -mt-3 mb-4">{{ hoy }}</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+        <p class="text-[11px] font-bold tracking-widest text-slate-500 uppercase">Hoy</p>
+        <p class="text-4xl font-extrabold mt-2 text-white">{{ total_hoy }}</p>
+        <p class="text-sm text-rose-400 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-rose-400 rounded-full"></span>ocupadas</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+        <p class="text-[11px] font-bold tracking-widest text-slate-500 uppercase">Este mes</p>
+        <p class="text-4xl font-extrabold mt-2 text-white">{{ total_mes }}</p>
+        <p class="text-sm text-slate-400 mt-1">reservas totales</p>
+      </div>
+      <div class="bg-blue-600 rounded-[24px] p-6 text-white">
+        <p class="text-[11px] font-bold tracking-widest text-blue-200 uppercase mb-3">Leyenda</p>
+        <div class="text-sm font-semibold space-y-1.5">
+          <div class="flex items-center gap-2"><span class="w-2 h-2 bg-rose-300 rounded-full"></span>Ocupado</div>
+          <div class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-300 rounded-full"></span>Libre</div>
+          <div class="flex items-center gap-2"><span class="w-2 h-2 bg-slate-300 rounded-full"></span>Bloqueado</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+        <h3 class="font-extrabold mb-2 text-white">Por pista (30 días)</h3>
+        {% for p in por_pista %}
+        <div class="flex justify-between items-center py-3 border-b border-slate-800 last:border-0">
+          <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-400"></div><span class="font-semibold text-sm text-slate-200">{{ p.pista__nombre }}</span></div>
+          <span class="bg-slate-800 text-slate-200 px-3 py-1 rounded-full text-xs font-bold">{{ p.total }}</span>
+        </div>
+        {% empty %}<p class="text-sm text-slate-500">Sin datos</p>{% endfor %}
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-[24px] p-6">
+        <h3 class="font-extrabold mb-2 text-white">Top usuarios</h3>
+        {% for u in top_usuarios %}
+        <div class="flex justify-between items-center py-3 border-b border-slate-800 last:border-0">
+          <span class="text-sm text-slate-200">{{ u.usuario__username }}</span>
+          <span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">{{ u.total }}</span>
+        </div>
+        {% empty %}<p class="text-sm text-slate-500">Sin datos</p>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALENDARIO ================= -->
+  <section id="calendario">
+    <h2 class="text-xl font-extrabold text-white mb-4 flex items-center gap-2"><i class="fas fa-calendar-days text-emerald-400"></i> Calendario</h2>
+    <p class="text-sm text-slate-400 -mt-3 mb-4 flex flex-wrap gap-3 items-center">
+      <span class="inline-flex items-center gap-1.5 bg-emerald-400/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span> Libre</span>
+      <span class="inline-flex items-center gap-1.5 bg-rose-400/10 text-rose-400 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-rose-400 rounded-full"></span> Ocupada</span>
+      <span class="inline-flex items-center gap-1.5 bg-slate-400/10 text-slate-300 px-3 py-1 rounded-full text-xs font-bold"><span class="w-2 h-2 bg-slate-400 rounded-full"></span> Bloqueada</span>
+    </p>
+
+    <div class="flex items-center gap-2 mb-4">
+      <div id="tira-dias" class="flex gap-2 overflow-x-auto pb-1 flex-1"></div>
+      <input type="date" id="ir-a-fecha" class="shrink-0 bg-slate-900 border border-slate-700 rounded-full px-3 py-2.5 text-xs font-bold text-slate-200">
+    </div>
+
+    <div class="bg-slate-900 rounded-[24px] border border-slate-800 shadow-xl p-3 md:p-6">
+      <p id="estado-carga" class="text-sm text-slate-500 py-10 text-center">Cargando disponibilidad…</p>
+      <p id="estado-error" class="hidden text-sm text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-2xl p-4"></p>
+      <div class="overflow-x-auto">
+        <div id="grid-calendario" class="hidden inline-grid gap-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESERVAS DE PÁDEL ================= -->
+  <section id="reservas-padel">
+    <h2 class="text-xl font-extrabold text-white mb-4 flex items-center gap-2"><i class="fas fa-table-tennis-paddle-ball text-blue-400"></i> Reservas de pádel</h2>
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] divide-y divide-slate-800 overflow-hidden">
+      {% for app in app_list %}{% if app.app_label == 'reservas_app' %}{% for model in app.models %}
+      <div class="flex justify-between items-center p-5 hover:bg-slate-800/50 transition">
+        <a href="{{ model.admin_url }}" class="font-bold text-white hover:text-blue-400">{{ model.name }}</a>
+        {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+      </div>
+      {% endfor %}{% endif %}{% endfor %}
+    </div>
+  </section>
+
+  <!-- ================= AUTENTICACIÓN ================= -->
+  <section id="autenticacion">
+    <h2 class="text-xl font-extrabold text-white mb-4 flex items-center gap-2"><i class="fas fa-users text-blue-400"></i> Autenticación y autorización</h2>
+    <div class="bg-slate-900 border border-slate-800 rounded-[24px] divide-y divide-slate-800 overflow-hidden">
+      {% for app in app_list %}{% if app.app_label == 'auth' %}{% for model in app.models %}
+      <div class="flex justify-between items-center p-5 hover:bg-slate-800/50 transition">
+        <a href="{{ model.admin_url }}" class="font-bold text-white hover:text-blue-400">{{ model.name }}</a>
+        {% if model.add_url %}<a href="{{ model.add_url }}" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2 rounded-full">+ Añadir</a>{% endif %}
+      </div>
+      {% endfor %}{% endif %}{% endfor %}
+    </div>
+  </section>
+
 </div>
-<div id="content-main">{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}</div>
+
+<script>
+(function () {
+  const PISTAS_SRV = [
+    {% for pista in pistas %}
+    { id: {{ pista.id }}, nombre: "{{ pista.nombre|escapejs }}", color: "{{ pista.color }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const DURACION_SLOT_MIN = 90;
+  const HORA_APERTURA = 8 * 60;
+  const HORA_CIERRE = 23 * 60;
+  const DIAS_TIRA = 21;
+
+  function generarSlots() {
+    const slots = [];
+    for (let m = HORA_APERTURA; m + DURACION_SLOT_MIN <= HORA_CIERRE; m += DURACION_SLOT_MIN) {
+      slots.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
+    }
+    return slots;
+  }
+  const SLOTS = generarSlots();
+  const DIAS_SEMANA = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+  const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+  function formatearFecha(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function sumarDias(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function sumarMinutos(hora, minutos) { const [h, m] = hora.split(':').map(Number); const t = h * 60 + m + minutos; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+  function textoFechaLarga(f) { const [y, m, d] = f.split('-').map(Number); const fecha = new Date(y, m - 1, d); return NOMBRES_DIA[fecha.getDay()] + ' ' + d + ' de ' + MESES[m - 1]; }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function obtenerCookie(nombre) { const v = `; ${document.cookie}`; const p = v.split(`; ${nombre}=`); if (p.length === 2) return p.pop().split(';').shift(); }
+  const csrftoken = obtenerCookie('csrftoken');
+
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  let fechaSeleccionada = formatearFecha(hoy);
+  let eventosDelDia = [];
+  let PISTAS = PISTAS_SRV;
+
+  const tiraDias = document.getElementById('tira-dias');
+  const gridEl = document.getElementById('grid-calendario');
+  const cargandoEl = document.getElementById('estado-carga');
+  const errorEl = document.getElementById('estado-error');
+  const inputIrAFecha = document.getElementById('ir-a-fecha');
+  inputIrAFecha.min = formatearFecha(hoy);
+  inputIrAFecha.value = fechaSeleccionada;
+
+  function renderTiraDias() {
+    let html = '';
+    for (let i = 0; i < DIAS_TIRA; i++) {
+      const d = sumarDias(hoy, i); const f = formatearFecha(d); const sel = f === fechaSeleccionada;
+      html += `<button data-fecha="${f}" class="dia-chip shrink-0 w-14 flex flex-col items-center py-2 rounded-2xl border transition ${sel ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'}">
+        <span class="text-[10px] font-bold uppercase ${sel ? 'text-blue-100' : 'text-slate-500'}">${i === 0 ? 'HOY' : DIAS_SEMANA[d.getDay()]}</span>
+        <span class="text-lg font-extrabold leading-tight">${d.getDate()}</span>
+      </button>`;
+    }
+    tiraDias.innerHTML = html;
+  }
+
+  function derivarPistasDesdeEventos(eventos) {
+    const mapa = {};
+    eventos.forEach(ev => { mapa[ev.extendedProps.pista_id] = true; });
+    return Object.keys(mapa).sort((a, b) => a - b).map(id => ({ id: Number(id), nombre: 'Pista ' + id, color: '#2563eb' }));
+  }
+
+  function calcularEstados(eventos) {
+    const mapa = {};
+    for (const ev of eventos) {
+      const inicio = new Date(ev.start), fin = new Date(ev.end);
+      for (const hora of SLOTS) {
+        const si = new Date(`${fechaSeleccionada}T${hora}:00`);
+        const sf = new Date(si.getTime() + DURACION_SLOT_MIN * 60000);
+        if (inicio < sf && fin > si) {
+          const estado = ev.extendedProps.tipo === 'bloqueo' ? 'bloqueada' : 'reservada';
+          mapa[`${ev.extendedProps.pista_id}-${hora}`] = { estado, evento: ev };
+        }
+      }
+    }
+    return mapa;
+  }
+
+  const ESTILOS = {
+    libre: { clases: 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20', etiqueta: '', icono: '' },
+    reservada: { clases: 'bg-rose-500 hover:bg-rose-600 cursor-pointer text-white', etiqueta: '', icono: '<i class="fas fa-lock mb-0.5"></i>' },
+    bloqueada: { clases: 'bg-slate-600 hover:bg-slate-500 cursor-pointer text-white', etiqueta: 'Bloq.', icono: '<i class="fas fa-ban mb-0.5"></i>' },
+    pasada: { clases: 'bg-slate-800/60 text-slate-600', etiqueta: '', icono: '' },
+  };
+
+  function renderGrid(mapaEstados) {
+    if (!PISTAS.length) {
+      cargandoEl.classList.add('hidden');
+      errorEl.textContent = 'No se ha podido determinar ninguna pista para hoy. Prueba a mirar otro día, o dime si esto persiste.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    errorEl.classList.add('hidden');
+    gridEl.style.gridTemplateColumns = `56px repeat(${PISTAS.length}, minmax(90px, 1fr))`;
+    const ahora = new Date();
+    const esHoySeleccionado = fechaSeleccionada === formatearFecha(hoy);
+
+    let html = '<div></div>';
+    for (const pista of PISTAS) {
+      html += `<div class="text-center pb-2 px-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-full mr-1" style="background:${pista.color}"></span>
+        <span class="font-bold text-xs md:text-sm text-slate-200">${escapeHtml(pista.nombre)}</span>
+      </div>`;
+    }
+    for (const hora of SLOTS) {
+      html += `<div class="sticky left-0 bg-slate-900 flex items-center justify-end pr-2 text-xs font-bold text-slate-500">${hora}</div>`;
+      for (const pista of PISTAS) {
+        const entrada = mapaEstados[`${pista.id}-${hora}`];
+        let estado = entrada ? entrada.estado : 'libre';
+        const si = new Date(`${fechaSeleccionada}T${hora}:00`);
+        if (estado === 'libre' && esHoySeleccionado && si <= ahora) estado = 'pasada';
+        const s = ESTILOS[estado];
+        const clicable = estado === 'reservada' || estado === 'bloqueada';
+        html += `<button type="button" data-pista="${pista.id}" data-pista-nombre="${escapeHtml(pista.nombre)}" data-hora="${hora}" data-estado="${estado}"
+          class="slot-celda h-20 rounded-2xl flex flex-col items-center justify-center font-bold text-xs md:text-sm transition ${s.clases}" ${clicable ? '' : 'disabled'}>
+          ${s.icono}<span>${hora}</span>${s.etiqueta ? `<span class="text-[9px] font-semibold opacity-90">${s.etiqueta}</span>` : ''}
+        </button>`;
+      }
+    }
+    gridEl.innerHTML = html;
+    gridEl.classList.remove('hidden');
+    cargandoEl.classList.add('hidden');
+  }
+
+  function cargarDia() {
+    cargandoEl.classList.remove('hidden');
+    errorEl.classList.add('hidden');
+    gridEl.classList.add('hidden');
+    fetch(`/eventos/?start=${fechaSeleccionada}&end=${fechaSeleccionada}`)
+      .then(r => r.json())
+      .then(eventos => {
+        eventosDelDia = eventos;
+        if (!PISTAS.length) PISTAS = derivarPistasDesdeEventos(eventos);
+        renderGrid(calcularEstados(eventos));
+      });
+  }
+
+  renderTiraDias();
+  cargarDia();
+
+  tiraDias.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dia-chip'); if (!btn) return;
+    fechaSeleccionada = btn.dataset.fecha; inputIrAFecha.value = fechaSeleccionada;
+    renderTiraDias(); cargarDia();
+  });
+  inputIrAFecha.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    fechaSeleccionada = e.target.value; renderTiraDias(); cargarDia();
+  });
+
+  const modalDetalle = document.createElement('div');
+  modalDetalle.id = 'modal-detalle-cal';
+  modalDetalle.className = 'fixed inset-0 z-50 hidden';
+  modalDetalle.innerHTML = `
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" data-cerrar-modal></div>
+    <div class="relative max-w-sm mx-auto mt-24 bg-slate-900 border border-slate-800 rounded-[24px] p-6 shadow-2xl">
+      <h3 class="font-extrabold text-lg mb-1 text-white">Detalle</h3>
+      <div id="detalle-contenido-cal" class="bg-slate-800/60 rounded-2xl p-4 my-4 text-sm space-y-1.5 text-slate-200"></div>
+      <button type="button" id="btn-cancelar-detalle-cal" class="hidden w-full bg-rose-500 hover:bg-rose-600 text-white py-3.5 rounded-full font-bold transition">Cancelar esta reserva</button>
+    </div>`;
+  document.body.appendChild(modalDetalle);
+  modalDetalle.querySelector('[data-cerrar-modal]').addEventListener('click', () => modalDetalle.classList.add('hidden'));
+
+  let reservaDetalleId = null;
+
+  gridEl.addEventListener('click', (e) => {
+    const celda = e.target.closest('.slot-celda');
+    if (!celda || celda.disabled) return;
+    const ev = eventosDelDia.find(x => x.extendedProps.pista_id == celda.dataset.pista && x.start.slice(11, 16) === celda.dataset.hora);
+    if (!ev) return;
+    reservaDetalleId = null;
+    const btnCancelar = document.getElementById('btn-cancelar-detalle-cal');
+    if (ev.extendedProps.tipo === 'bloqueo') {
+      document.getElementById('detalle-contenido-cal').innerHTML = `
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Pista</span><span class="font-bold text-white">${celda.dataset.pistaNombre}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Fecha</span><span class="font-bold text-white capitalize">${textoFechaLarga(fechaSeleccionada)}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Hora</span><span class="font-bold text-white">${celda.dataset.hora} - ${sumarMinutos(celda.dataset.hora, DURACION_SLOT_MIN)}</span></p>
+        <p class="pt-2 border-t border-slate-700 mt-2 text-slate-300">${escapeHtml(ev.title)}</p>`;
+      btnCancelar.classList.add('hidden');
+    } else {
+      reservaDetalleId = ev.id.replace('reserva-', '');
+      document.getElementById('detalle-contenido-cal').innerHTML = `
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Reserva</span><span class="font-bold text-white">${escapeHtml(ev.title)}</span></p>
+        <p class="flex justify-between mb-1"><span class="text-slate-400">Fecha</span><span class="font-bold text-white capitalize">${textoFechaLarga(fechaSeleccionada)}</span></p>
+        <p class="flex justify-between"><span class="text-slate-400">Hora</span><span class="font-bold text-white">${celda.dataset.hora} - ${sumarMinutos(celda.dataset.hora, DURACION_SLOT_MIN)}</span></p>`;
+      btnCancelar.classList.remove('hidden');
+    }
+    modalDetalle.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-cancelar-detalle-cal').addEventListener('click', function () {
+    if (!reservaDetalleId || !confirm('¿Cancelar esta reserva como administrador?')) return;
+    fetch(`/reservas/${reservaDetalleId}/cancelar/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken } })
+      .then(r => r.json())
+      .then(d => { if (d.success) { modalDetalle.classList.add('hidden'); cargarDia(); } else alert(d.error || 'No se pudo cancelar.'); });
+  });
+})();
+</script>
 {% endblock %}
