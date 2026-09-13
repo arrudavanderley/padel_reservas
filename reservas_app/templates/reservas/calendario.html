@@ -133,6 +133,7 @@
   hoy.setHours(0, 0, 0, 0);
   let fechaSeleccionada = formatearFecha(hoy);
   let eventosDelDia = [];
+  let ultimoMapaEstados = {};
 
   const tiraDias = document.getElementById('tira-dias');
   const gridEl = document.getElementById('grid-calendario');
@@ -219,7 +220,7 @@
     gridEl.classList.add('hidden');
     fetch(`/eventos/?start=${fechaSeleccionada}&end=${fechaSeleccionada}`)
       .then(r => r.json())
-      .then(eventos => { eventosDelDia = eventos; renderGrid(calcularEstados(eventos)); });
+      .then(eventos => { eventosDelDia = eventos; ultimoMapaEstados = calcularEstados(eventos); renderGrid(ultimoMapaEstados); });
   }
 
   renderTiraDias();
@@ -304,7 +305,8 @@
 
   let reservaDetalleId = null;
   function abrirModalDetalle(celda) {
-    const ev = eventosDelDia.find(e => e.extendedProps.propia && e.extendedProps.pista_id == celda.dataset.pista && e.start.slice(11, 16) === celda.dataset.hora);
+    const entrada = ultimoMapaEstados[`${celda.dataset.pista}-${celda.dataset.hora}`];
+    const ev = entrada && entrada.evento;
     if (!ev) return;
     reservaDetalleId = ev.id.replace('reserva-', '');
     document.getElementById('detalle-contenido').innerHTML = `
