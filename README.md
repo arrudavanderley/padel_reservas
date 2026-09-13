@@ -1,39 +1,28 @@
-# 🎾 Sistema de Reservas - Padel
+# 🎾 Sistema de Reservas · Pádel
 
-Proyecto web de reservas de pistas de pádel con **diseño premium moderno**, hecho con Django, PostgreSQL y desplegado en Render. 100% funcional y responsive.
+Aplicación web de reservas para un club de pádel, construida con Django. Calendario de disponibilidad en tiempo real, reservas sin solapamiento (incluso con varios usuarios a la vez), recurrencia semanal/diaria/mensual, y un panel de administración propio pensado para gestionar el día a día del club sin tocar código.
 
-### ✨ Qué hace
+Datos y club ficticios — es un proyecto de demostración, pero la lógica de reservas es la que usaría un club real.
 
-Reserva tu pista en 20 segundos. Sistema pensado para clubes reales. Todo ficticio para demo, pero 100% funcional.
+## Qué hace
 
-- Landing page moderna con hero, pistas, cómo funciona y contacto con mapa
-- Calendario interactivo en tiempo real (FullCalendar)
-- Reservas instantáneas con modal, sin recargar la página
-- Confirmación automática por **email**
+- **Calendario por franjas**: en vez de un calendario genérico, cada día se muestra como una rejilla de franjas de 90 minutos por pista, coloreada según disponibilidad (libre / tuya / ocupada / bloqueada). Reservar es tocar un hueco libre y confirmar — sin escribir horas a mano.
+- **Sin solapamientos, ni con tráfico simultáneo**: la validación comprueba huecos y bloqueos antes de guardar, dentro de una transacción con bloqueo de fila (`select_for_update`) sobre la pista implicada.
+- **Reservas recurrentes** (diaria, semanal o mensual), con límite de seguridad para no generar cientos de filas por error.
+- **Límite de reservas activas por usuario**, configurable.
+- **Bloqueos administrativos** (mantenimiento, eventos) que el calendario respeta igual que una reserva real.
+- **Email de confirmación y cancelación**, con backend de consola por defecto (no requiere cuenta de correo para probar el proyecto) y SMTP real opcional.
+- **Panel de administración unificado**: dashboard, calendario (con nombres reales de usuario y cancelación desde ahí) y accesos a Reservas/Pistas/Bloqueos/Usuarios en una sola página con navegación por anclas, tema oscuro de extremo a extremo — incluidas las pantallas estándar de Django que no tienen plantilla propia.
 
-### 🚀 Funcionalidades
+## Stack
 
-- **Calendario interactivo** con FullCalendar (vistas Mes/Semana/Día) y filtros por pista
-- **Validación anti-solapamiento:** evita que 2 personas reserven la misma pista a la misma hora (con `select_for_update` para concurrencia)
-- **Reservas recurrentes:** diaria, semanal y mensual con límite de seguridad (104 ocurrencias)
-- **Límite de 5 reservas activas** por usuario (una recurrente cuenta como varias)
-- **Bloqueos de pistas** por mantenimiento/eventos desde /bloqueos/ (solo staff)
-- **Autenticación completa:** registro, login, logout con diseño premium
-- **Confirmación por email:** al crear y cancelar reserva (configurable)
-- **Diseño responsive premium:** Tailwind CSS, glass navbar, cards, animaciones
-- **Botón de compartir nativo:** Web Share API + fallback con WhatsApp, X, Facebook, copiar link
-- **Panel admin Django** completo
-- **Persistencia real:** PostgreSQL en Render (no se borran las reservas)
+- **Backend**: Django 5, Python 3.11
+- **Base de datos**: SQLite por defecto (vía `dj_database_url`; se cambia a Postgres u otra en producción con una sola variable de entorno, sin tocar código)
+- **Frontend**: Tailwind CSS (CDN), Font Awesome, tipografía Inter — calendario y rejilla de disponibilidad son JavaScript propio, sin librerías de calendario de terceros
+- **Email**: `django.core.mail`, backend de consola en desarrollo / SMTP (Gmail, Brevo, SendGrid...) en producción
+- **Deploy**: Render + WhiteNoise + Gunicorn
 
-### 🛠 Stack
-
-- **Backend:** Django 5, Python 3.11
-- **Base de datos:** PostgreSQL (Render) / SQLite en local
-- **Frontend:** Tailwind CSS, FullCalendar 5, Font Awesome, Inter font
-- **Deploy:** Render + WhiteNoise + Gunicorn
-- **Email:** Django Email Backend (Gmail / Brevo / SendGrid)
-
-### 💻 Cómo ejecutarlo en local
+## Cómo ejecutarlo en local
 
 ```bash
 # 1. Clonar
@@ -50,70 +39,71 @@ source venv/bin/activate
 # 3. Dependencias
 pip install -r requirements.txt
 
-# 4. Variables de entorno (crea un .env o usa settings local)
-# Para probar email en consola:
+# 4. Variables de entorno
+# Copia .env.example a .env (o usa las variables de tu entorno) y revisa
+# al menos SECRET_KEY. Para probar el email sin cuenta real, deja:
 # EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 
 # 5. Base de datos
 python manage.py migrate
 
-# 6. Admin
+# 6. Superusuario
 python manage.py createsuperuser
 
 # 7. Arrancar
 python manage.py runserver
 ```
 
-Abre http://127.0.0.1:8000/ 
-Entra en /admin con tu superuser y crea las pistas: Pista Central, Sunset, Pro (con colores #2563eb, #f97316, #0f172a).
+Abre `http://127.0.0.1:8000/`. Entra en `/admin/` con el superusuario y crea tus pistas (nombre, color hexadecimal para el calendario — por ejemplo `#2563eb`).
 
-### 📧 Configurar email real (gratis)
+## Configurar email real (gratis)
 
-En `padel_reservas/settings.py` añade:
+En Render (o tu `.env` local), define:
 
-```python
-# Email - para que lleguen confirmaciones de verdad
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # o smtp-relay.brevo.com si usas Brevo
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER') # tu email
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # app password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+```
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com          # o smtp-relay.brevo.com si usas Brevo
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=tu_email@gmail.com
+EMAIL_HOST_PASSWORD=tu-app-password
+DEFAULT_FROM_EMAIL=tu_email@gmail.com
 ```
 
-En Render > Environment > añade:
-- `EMAIL_HOST_USER` = tu gmail
-- `EMAIL_HOST_PASSWORD` = app password de Gmail (16 caracteres)
+Con Gmail, `EMAIL_HOST_PASSWORD` es una **contraseña de aplicación** de 16 caracteres, no la contraseña normal de la cuenta. Si no configuras nada, el proyecto sigue funcionando igual: `fail_silently=True` hace que un email fallido nunca bloquee una reserva, simplemente no llega el correo.
 
-Si no lo configuras, el código no falla por `fail_silently=True`, simplemente no llega el email.
-
-### 📦 Estructura
+## Estructura
 
 ```
 padel_reservas/
-├── padel_reservas/ (settings, urls principales)
+├── padel_reservas/              # settings, urls raíz, wsgi
 ├── reservas_app/
-│   ├── models.py (Pista, Reserva, Bloqueo)
-│   ├── views.py (home, calendario, eventos_json, crear/cancelar)
-│   ├── forms.py (ReservaForm, RegistroForm, BloqueoForm)
-│   └── templates/reservas/
-│       ├── base.html (navbar glass + footer + compartir)
-│       ├── home.html (landing premium)
-│       ├── calendario.html (FullCalendar moderno)
-│       ├── login.html / registro.html
-│       └── bloqueos_lista.html
-└── requirements.txt
+│   ├── models.py                # Pista, Perfil, Reserva, Bloqueo, hay_solape()
+│   ├── views.py                 # home, calendario, eventos_json, crear/cancelar_reserva...
+│   ├── forms.py                 # ReservaForm, RegistroForm, BloqueoForm
+│   ├── admin.py                 # Panel de administración: sin acciones masivas,
+│   │                             títulos propios, Dashboard/Calendario embebidos en /admin/
+│   ├── fixtures/datos_prueba.json
+│   ├── migrations/
+│   ├── static/reservas/{css,js}/
+│   └── templates/
+│       ├── reservas/            # base.html, home.html, calendario.html, login.html,
+│       │                          registro.html, bloqueos_lista.html
+│       └── admin/               # base_site.html (tema oscuro + nav de todo /admin/),
+│                                   index.html (panel unificado)
+├── requirements.txt
+└── manage.py
 ```
 
-### 📝 Notas
+## Notas
 
-- Al cancelar, la reserva se marca como `cancelada`, no se borra, para guardar historial
-- Zona horaria: Europe/Madrid
-- Horario club (ficticio): 8:00-23:00, última reserva 21:30
-- Contacto ficticio.
-- Proyecto demo creado por Arruda Van der Ley - 2026
+- Cancelar una reserva la marca como `cancelada`; no se borra, para conservar el historial.
+- Zona horaria: `Europe/Madrid`.
+- Horario del club (ficticio): 8:00–23:00, última reserva a las 21:30, franjas de 90 minutos.
+- El panel de administración no tiene acciones masivas ni casillas de selección a propósito: cada modelo ya tiene su propio botón de eliminar en la pantalla de edición.
+- Contacto y datos del club, ficticios.
+- Proyecto demo creado por Arruda Van der Ley — 2026.
 
-### 📄 Licencia
+## Licencia
 
-MIT - Úsalo libremente para tu portfolio.
+MIT — úsalo libremente para tu portfolio.
