@@ -6,8 +6,8 @@ from . import views
 urlpatterns = [
     # Nueva landing moderna como portada
     path('', views.home, name='home'),
+
     
-    # Calendario movido a /calendario/
     path('calendario/', views.calendario, name='calendario'),
     path('eventos/', views.eventos_json, name='eventos_json'),
 
@@ -19,5 +19,5 @@ urlpatterns = [
 
     path('registro/', views.registro, name='registro'),
     path('login/', auth_views.LoginView.as_view(template_name='reservas/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('logout/', views.cerrar_sesion, name='logout'),
 ]
