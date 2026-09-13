@@ -25,16 +25,15 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .forms import BloqueoForm, RegistroForm, ReservaForm
 from .models import Bloqueo, ESTADO_CANCELADA, ESTADO_CONFIRMADA, Pista, Reserva, hay_solape
-
 from django.contrib.auth import logout as django_logout
-from django.shortcuts import redirect
-
-def cerrar_sesion(request):
-    django_logout(request)
-    return redirect('calendario')
 
 LIMITE_OCURRENCIAS_RECURRENCIA = 104
 LIMITE_RESERVAS_ACTIVAS_POR_USUARIO = 5
+
+
+def cerrar_sesion(request):
+    django_logout(request)
+    return redirect('home')
 
 
 def sumar_periodo(fecha_actual, frecuencia):
