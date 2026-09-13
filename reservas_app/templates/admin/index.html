@@ -145,6 +145,7 @@
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
   let fechaSeleccionada = formatearFecha(hoy);
   let eventosDelDia = [];
+  let ultimoMapaEstados = {};
   let PISTAS = PISTAS_SRV;
 
   const tiraDias = document.getElementById('tira-dias');
@@ -244,7 +245,8 @@
       .then(eventos => {
         eventosDelDia = eventos;
         if (!PISTAS.length) PISTAS = derivarPistasDesdeEventos(eventos);
-        renderGrid(calcularEstados(eventos));
+        ultimoMapaEstados = calcularEstados(eventos);
+        renderGrid(ultimoMapaEstados);
       });
   }
 
@@ -279,7 +281,8 @@
   gridEl.addEventListener('click', (e) => {
     const celda = e.target.closest('.slot-celda');
     if (!celda || celda.disabled) return;
-    const ev = eventosDelDia.find(x => x.extendedProps.pista_id == celda.dataset.pista && x.start.slice(11, 16) === celda.dataset.hora);
+    const entrada = ultimoMapaEstados[`${celda.dataset.pista}-${celda.dataset.hora}`];
+    const ev = entrada && entrada.evento;
     if (!ev) return;
     reservaDetalleId = null;
     const btnCancelar = document.getElementById('btn-cancelar-detalle-cal');
